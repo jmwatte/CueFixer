@@ -1,0 +1,32 @@
+name: CI - Pester Tests
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PowerShell
+        uses: actions/setup-powershell@v2
+        with:
+          # Use latest supported PowerShell 7.x
+          pwsh-version: 'latest'
+
+      - name: Install Pester
+        run: |
+          pwsh -NoProfile -Command "Set-PSRepository -Name 'PSGallery' -InstallationPolicy Trusted -ErrorAction SilentlyContinue"
+          pwsh -NoProfile -Command "Install-Module -Name Pester -Scope CurrentUser -Force"
+
+      - name: Run Pester tests
+        run: |
+          pwsh -NoProfile -Command "Import-Module -Name ./CueFixer.psm1 -Force -Verbose; Invoke-Pester -Script ./Tests -Output Detailed"

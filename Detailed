@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<test-results xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="nunit_schema_2.5.xsd" name="Pester" total="4" errors="0" failures="4" not-run="0" inconclusive="0" ignored="0" skipped="0" invalid="0" date="2025-08-19" time="19:20:05">
+  <environment nunit-version="2.5.8.0" cwd="C:\Users\resto\Documents\PowerShell\Modules\CueFixer" user-domain="DESKTOP-OLQ2J2M" clr-version="" platform="Microsoft Windows 11 Home|C:\WINDOWS|\Device\Harddisk0\Partition3" user="user" os-version="10.0.26100" machine-name="DESKTOP-OLQ2J2M" />
+  <culture-info current-culture="en-US" current-uiculture="en-US" />
+  <test-suite type="Powershell" name="Pester" executed="True" result="Failure" success="False" time="1.6062" asserts="0">
+    <results>
+      <test-suite type="PowerShell" name="Analyze-CueContent" executed="True" result="Failure" success="False" time="1.6062" asserts="0">
+        <results>
+          <test-case name="returns Clean for a well-formed cue" time="0.6772" asserts="0" success="False" result="Failure" executed="True">
+            <failure>
+              <message>'-Be' is not a valid Should operator.</message>
+              <stack-trace>at line: 42 in C:\Program Files\WindowsPowerShell\Modules\Pester\3.4.0\Functions\Assertions\Should.ps1</stack-trace>
+            </failure>
+          </test-case>
+          <test-case name="detects missing extension and offers fix when matching file exists" time="0.4027" asserts="0" success="False" result="Failure" executed="True">
+            <failure>
+              <message>'-Be' is not a valid Should operator.</message>
+              <stack-trace>at line: 42 in C:\Program Files\WindowsPowerShell\Modules\Pester\3.4.0\Functions\Assertions\Should.ps1</stack-trace>
+            </failure>
+          </test-case>
+          <test-case name="marks as Unfixable when referenced audio missing" time="0.2647" asserts="0" success="False" result="Failure" executed="True">
+            <failure>
+              <message>'-Be' is not a valid Should operator.</message>
+              <stack-trace>at line: 42 in C:\Program Files\WindowsPowerShell\Modules\Pester\3.4.0\Functions\Assertions\Should.ps1</stack-trace>
+            </failure>
+          </test-case>
+          <test-case name="detects TRACK before FILE as structural issue" time="0.2616" asserts="0" success="False" result="Failure" executed="True">
+            <failure>
+              <message>'-BeTrue' is not a valid Should operator.</message>
+              <stack-trace>at line: 42 in C:\Program Files\WindowsPowerShell\Modules\Pester\3.4.0\Functions\Assertions\Should.ps1</stack-trace>
+            </failure>
+          </test-case>
+        </results>
+      </test-suite>
+    </results>
+  </test-suite>
+</test-results>
