@@ -10,6 +10,7 @@ jobs:
   test:
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: true
       matrix:
         os: [ubuntu-latest, windows-latest]
     steps:
@@ -21,6 +22,15 @@ jobs:
         with:
           # Use latest supported PowerShell 7.x
           pwsh-version: 'latest'
+
+      - name: Cache PowerShell modules
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.local/share/powershell/Modules
+          key: ${{ runner.os }}-psmodules-${{ hashFiles('**/*.ps1') }}
+          restore-keys: |
+            ${{ runner.os }}-psmodules-
 
       - name: Install Pester
         shell: pwsh
