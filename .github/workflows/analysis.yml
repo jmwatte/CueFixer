@@ -13,6 +13,9 @@ jobs:
 
       - name: Run PSScriptAnalyzer and Pester
         shell: pwsh
+        env:
+          TEMP: ${{ runner.temp }}
+          TMPDIR: ${{ runner.temp }}
         run: |
           # Install and run PSScriptAnalyzer
           Install-Module -Name PSScriptAnalyzer -Force -Scope CurrentUser -Confirm:$false
