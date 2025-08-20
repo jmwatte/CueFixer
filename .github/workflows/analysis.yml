@@ -15,7 +15,7 @@ jobs:
         shell: pwsh
         run: |
           # Install and run PSScriptAnalyzer
-          Install-Module -Name PSScriptAnalyzer -Force -Scope Current -Confirm:$false
+          Install-Module -Name PSScriptAnalyzer -Force -Scope CurrentUser -Confirm:$false
           Import-Module PSScriptAnalyzer -Force
           $findings = Invoke-ScriptAnalyzer -Path . -Recurse
           if ($findings) {
@@ -26,6 +26,6 @@ jobs:
           }
 
           # Install and run Pester
-          Install-Module -Name Pester -Force -Scope Current -Confirm:$false
+          Install-Module -Name Pester -Force -Scope CurrentUser -Confirm:$false
           Import-Module Pester -Force
           Invoke-Pester -Script @{ Path = 'Tests' } -EnableExit
