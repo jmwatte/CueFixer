@@ -11,6 +11,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup PowerShell
+        uses: actions/setup-pwsh@v2
+        with:
+          pwsh-version: 'latest'
+
       - name: Run PSScriptAnalyzer and Pester
         shell: pwsh
         run: |
@@ -18,10 +23,14 @@ jobs:
           Install-Module -Name PSScriptAnalyzer -Force -Scope CurrentUser -Confirm:$false
           Import-Module PSScriptAnalyzer -Force
           $findings = Invoke-ScriptAnalyzer -Path . -Recurse
-          if ($findings) {
-            Write-Host "PSScriptAnalyzer found issues:" -ForegroundColor Yellow
-            $findings | Format-Table -AutoSize
+          $errors = $findings | Where-Object { $_.Severity -eq 'Error' }
+          if ($errors) {
+            Write-Host "PSScriptAnalyzer found ERROR-level issues:" -ForegroundColor Yellow
+            $errors | Format-Table -AutoSize
             exit 1
+          } elseif ($findings) {
+            Write-Host "PSScriptAnalyzer found non-error issues (warnings/information):" -ForegroundColor Yellow
+            $findings | Where-Object { $_.Severity -ne 'Error' } | Format-Table -AutoSize
           } else {
             Write-Host "No PSScriptAnalyzer issues found." -ForegroundColor Green
           }

@@ -23,14 +23,19 @@ jobs:
           pwsh-version: 'latest'
 
       - name: Install Pester
+        shell: pwsh
         run: |
-          pwsh -NoProfile -Command "Set-PSRepository -Name 'PSGallery' -InstallationPolicy Trusted -ErrorAction SilentlyContinue"
-          pwsh -NoProfile -Command "Install-Module -Name Pester -Scope CurrentUser -Force"
+          Set-PSRepository -Name 'PSGallery' -InstallationPolicy Trusted -ErrorAction SilentlyContinue
+          Install-Module -Name Pester -Scope CurrentUser -Force
 
       - name: Run Pester tests
+        shell: pwsh
         run: |
-          pwsh -NoProfile -Command "Import-Module -Name ./CueFixer.psm1 -Force -Verbose; Invoke-Pester -Script @{ Path = './Tests'; Output = 'Detailed' }"
+          Import-Module -Name ./CueFixer.psm1 -Force -Verbose
+          Invoke-Pester -Script @{ Path = './Tests'; Output = 'Detailed' }
 
       - name: Run demo smoke test (dry-run)
+        shell: pwsh
         run: |
-          pwsh -NoProfile -Command "Import-Module -Name ./CueFixer.psm1 -Force -Verbose; ./.\examples/run-demo.ps1"
+          Import-Module -Name ./CueFixer.psm1 -Force -Verbose
+          ./examples/run-demo.ps1
