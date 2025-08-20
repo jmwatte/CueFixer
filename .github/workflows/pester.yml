@@ -42,8 +42,28 @@ jobs:
           TMPDIR: ${{ runner.temp }}
         run: |
           Import-Module -Name ./CueFixer.psm1 -Force -Verbose
-          # Use -Path (Pester v5) instead of legacy -Script hashtable to ensure tests are discovered
-          Invoke-Pester -Path './Tests' -Output 'Detailed' -EnableExit
+          # Invoke-Pester has different parameter-sets across Pester versions used on runners.
+          # Try a sequence of compatible calls and fall back if a ParameterBinding error occurs.
+          $attempts = @(
+            { Invoke-Pester -Path './Tests' -Output 'Detailed' -EnableExit },
+            { Invoke-Pester -Path './Tests' -Output 'Detailed' },
+            { Invoke-Pester -Path './Tests' -EnableExit },
+            { Invoke-Pester -Path './Tests' },
+            { Invoke-Pester -Script @{ Path = './Tests' } }
+          )
+          $lastErr = $null
+          foreach ($try in $attempts) {
+            try {
+              & $try
+              Write-Output 'Invoke-Pester succeeded.'
+              exit 0
+            } catch {
+              $lastErr = $_
+              Write-Output "Attempt failed: $($_.Exception.Message)"
+            }
+          }
+          Write-Output 'All Invoke-Pester invocation attempts failed. Rethrowing last error.'
+          throw $lastErr
 
       - name: Run demo smoke test (dry-run)
         shell: pwsh
