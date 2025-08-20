@@ -4,7 +4,7 @@ Describe 'Set-CueFileStructure / Repair-CueFile' {
     }
 
     It 'creates a backup and applies structural fixes' {
-        $tmp = Join-Path $env:TEMP "test-structure.cue"
+    $tmp = Join-Path ([System.IO.Path]::GetTempPath()) "test-structure.cue"
         @(
             'TITLE "Album"',
             'PERFORMER "Artist"',
