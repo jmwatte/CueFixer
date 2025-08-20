@@ -36,7 +36,7 @@ CueFixer/
 	- `FileIO.ps1`             # read/write, backup, encoding detection/preservation
 	- `Editor.ps1`             # Open-InEditor abstraction
 - `UI/` — output and interactive flows
-	- `Interactive.ps1`        # Run-InteractiveFix
+	- `Interactive.ps1`        # Invoke-InteractiveFix
 	- `Reporting.ps1`         # Show-Fixables/Show-Unfixables/Summaries
 - `Tests/` — Pester tests
 
@@ -71,10 +71,65 @@ Design notes: return objects, avoid direct Write-Host in lib code. Surface `-Wha
 5. Wire `CueFixer.psm1` to dot-source the scripts and export the public functions.
 6. Run Pester and PSScriptAnalyzer; iterate until green.
 
-## Quick usage (concept)
-- Audit: `Get-CueAudit -Path 'C:\Music' -Recurse`
-- Dry-run repair: `Get-CueAudit -Path .\album | Repair-CueFile -DryRun`
-- Interactive: `Invoke-CueInteractive -Path .\album -Editor notepad`
+## Usage
+
+The module exposes small, composable cmdlets you can call directly from PowerShell or wire into scripts.
+
+Examples:
+
+- Import the module (when working from the repo root):
+
+	```powershell
+	Import-Module .\CueFixer.psm1 -Force -Verbose
+	```
+
+- Audit a single CUE file and show the full object:
+
+	```powershell
+	Get-CueAudit -Path '.\album\album.cue' | Format-List -Property *
+	```
+
+- Audit a directory recursively:
+
+	```powershell
+	Get-CueAudit -Path 'C:\Music' -Recurse
+	```
+
+- Dry-run a repair (no files written):
+
+	```powershell
+	Get-CueAudit -Path .\album | Repair-CueFile -DryRun -Verbose
+	```
+
+- Repair and create a backup (writes changes):
+
+	```powershell
+	Get-CueAudit -Path .\album | Repair-CueFile -Backup
+	```
+
+- Use `-WhatIf`/`-Confirm` to preview destructive operations:
+
+	```powershell
+	Repair-CueFile -Path .\album\album.cue -WhatIf
+	```
+
+- View command help (full examples and parameter details):
+
+	```powershell
+	Get-Help Get-CueAudit -Full
+	```
+
+Try it (copy/paste):
+
+```powershell
+# from the repo root
+Import-Module .\CueFixer.psm1 -Force
+
+# audit and dry-run repair
+Get-CueAudit -Path .\Tests\Fixtures -Recurse | Repair-CueFile -DryRun
+```
+
+If you'd like, I can add a short sample fixture under `Tests/Fixtures/` and a small `examples/` folder with before/after cue files to make these examples reproducible.
 
 ## Next steps I can take (pick one)
 - Scaffold the module layout and create `Lib/Analyze.ps1` plus unit tests (recommended first step)

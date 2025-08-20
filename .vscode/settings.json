@@ -1,7 +1,0 @@
-{
-	"terminal.explorerKind": "external",
-	// Use PowerShell 7 as the external terminal executable
-	"terminal.external.windowsExec": "C:\\Program Files\\PowerShell\\7\\pwsh.exe",
-	// Keep integrated profile set to PowerShell for integrated terminals if needed
-	"terminal.integrated.defaultProfile.windows": "PowerShell"
-}

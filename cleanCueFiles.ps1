@@ -16,6 +16,21 @@ $cueStatus = @()
 
 
 $preferredEditor = "hx"  # Change to "notepad", "code", etc.
+<#
+.SYNOPSIS
+Open a file in the user's preferred editor.
+
+.DESCRIPTION
+`Open-InEditor` launches the configured editor (from `$preferredEditor`) for
+the supplied file path. The helper is intentionally minimal and used by the
+interactive workflow to open cue files for manual editing.
+
+.PARAMETER filePath
+Path to the file to open.
+
+.EXAMPLE
+Open-InEditor 'C:\Music\Album\album.cue'
+#>
 function Open-InEditor($filePath) {
 	switch ($preferredEditor) {
 		"hx" { & hx $filePath }
@@ -113,7 +128,7 @@ function Fix-CueFileStructure {
 		return $false
 	}
 }
-function Run-InteractiveFix {
+function Invoke-InteractiveFix {
 	param ([System.Collections.ArrayList]$cueFiles)
 
 	$groupedByFolder = $cueFiles | Group-Object { $_.DirectoryName }
@@ -328,6 +343,23 @@ function Show-Fixables {
 	}
 }
 
+<#
+.SYNOPSIS
+Apply computed fixes to fixable .cue files.
+
+.DESCRIPTION
+`Apply-Fixes` takes an array of audit result objects (the output from
+`Get-CueAudit`/`Get-CueAuditCore`) and writes proposed fixes to disk for items
+marked as `Fixable`. Backups are created via `Save-FileWithBackup` (or manual
+copy in legacy flows). Structural fixes are applied first and the file is
+re-analyzed before applying content fixes.
+
+.PARAMETER results
+An array of audit result objects.
+
+.EXAMPLE
+Get-CueAudit -Path . | Apply-Fixes
+#>
 function Apply-Fixes {
 	param ($results)
 	foreach ($cue in $results | Where-Object { $_.Status -eq 'Fixable' }) {
@@ -367,13 +399,23 @@ function Apply-Fixes {
 				}
 			}
 		}
-		# Apply content fixes (if any) — join lines to preserve CRLFs
-		if ($cue.UpdatedLines -and -not $DryRun) {
-			Set-Content -LiteralPath $cue.Path -Value ($cue.UpdatedLines -join "`r`n") -Encoding UTF8 -Force
-			Write-Host "🔧 Fixed: $($cue.Path)" -ForegroundColor Green
-		}
-		elseif ($DryRun) {
-			Write-Host "🧪 Dry-run: would write fixes to $($cue.Path)" -ForegroundColor DarkCyan
+		# Apply content fixes (if any) using the new content fixer and FileIO
+		if ($cue.UpdatedLines) {
+			$fixResult = Get-CueContentFix -CueFilePath $cue.Path -UpdatedLines $cue.UpdatedLines
+
+			if ($fixResult.Changed) {
+				if ($DryRun) {
+					Write-Host "🧪 Dry-run: would write fixes to $($cue.Path)" -ForegroundColor DarkCyan
+				}
+				else {
+					# Use centralized IO helper to write file and optionally backup
+					Save-FileWithBackup -Path $cue.Path -Content $fixResult.FixedText -Backup:$true | Out-Null
+					Write-Host "🔧 Fixed: $($cue.Path)" -ForegroundColor Green
+				}
+			}
+			else {
+				Write-Host "ℹ️ No content changes necessary for $($cue.Path)" -ForegroundColor Yellow
+			}
 		}
 		else {
 			Write-Host "ℹ️ No content fixes to apply for $($cue.Path)" -ForegroundColor Yellow
@@ -430,6 +472,6 @@ if ($SkipGoodOnes) {
 }
 
 if ($InteractiveFix) {
-	Run-InteractiveFix -cueFiles $cueFiles
+	Invoke-InteractiveFix -cueFiles $cueFiles
 	return
 }

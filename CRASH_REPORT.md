@@ -23,7 +23,7 @@ Minimal reproduction steps (include in issue)
 2. Using PowerShell 7 (pwsh), run the tests in a spawned process as the assistant does:
 
    ```powershell
-   pwsh -NoProfile -NoLogo -Command "Import-Module Pester -Force; Invoke-Pester -Script 'C:\Users\resto\Documents\PowerShell\Modules\CueFixer\Tests' -Output Detailed; exit $LASTEXITCODE"
+   pwsh -NoProfile -NoLogo -Command "Import-Module Pester -Force; Invoke-Pester -Script @{ Path = 'C:\Users\resto\Documents\PowerShell\Modules\CueFixer\Tests'; Output = 'Detailed' } ; exit $LASTEXITCODE"
    ```
 
 3. Observe native crash (exit code -1073741571) when the assistant invokes the same command. Note: running `Invoke-Pester` directly interactively does not crash on this machine.
@@ -54,7 +54,7 @@ pwsh -NoProfile -NoLogo -Command "$PSVersionTable | Out-String" > pwsh-version.t
 pwsh -NoProfile -NoLogo -Command "Get-Module -ListAvailable Pester | Select Name,Version,Path | Out-String" > pester-versions.txt
 
 # Run tests and capture output
-pwsh -NoProfile -NoLogo -Command "Import-Module Pester -Force; Invoke-Pester -Script 'C:\Users\resto\Documents\PowerShell\Modules\CueFixer\Tests' -Output Detailed" > pester-detailed.txt 2>&1
+pwsh -NoProfile -NoLogo -Command "Import-Module Pester -Force; Invoke-Pester -Script @{ Path = 'C:\Users\resto\Documents\PowerShell\Modules\CueFixer\Tests'; Output = 'Detailed' }" > pester-detailed.txt 2>&1
 
 # Collect application event log entries for last 30 minutes
 Get-WinEvent -FilterHashtable @{LogName='Application'; StartTime=(Get-Date).AddMinutes(-30)} |
@@ -78,7 +78,7 @@ Environment:
 
 Repro steps:
 1. Run the following command (assistant-spawned style):
-   pwsh -NoProfile -NoLogo -Command "Import-Module Pester -Force; Invoke-Pester -Script '<path to Tests>' -Output Detailed; exit $LASTEXITCODE"
+   pwsh -NoProfile -NoLogo -Command "Import-Module Pester -Force; Invoke-Pester -Script @{ Path = '<path to Tests>'; Output = 'Detailed' } ; exit $LASTEXITCODE"
 2. Observe pwsh terminates with exit code -1073741571.
 
 Notes:

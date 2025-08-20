@@ -9,7 +9,7 @@ Describe 'Analyze-CueContent' {
     }
 
     It 'returns Clean for a well-formed cue' {
-        $tmp = Join-Path $env:TEMP ([System.Guid]::NewGuid().ToString())
+    $tmp = Join-Path ([System.IO.Path]::GetTempPath()) ([System.Guid]::NewGuid().ToString())
         New-Item -ItemType Directory -Path $tmp | Out-Null
         try {
             # create an audio file and a matching cue
@@ -30,7 +30,7 @@ Describe 'Analyze-CueContent' {
     }
 
     It 'detects missing extension and offers fix when matching file exists' {
-        $tmp = Join-Path $env:TEMP ([System.Guid]::NewGuid().ToString())
+    $tmp = Join-Path ([System.IO.Path]::GetTempPath()) ([System.Guid]::NewGuid().ToString())
         New-Item -ItemType Directory -Path $tmp | Out-Null
         try {
             # create audio file with extension, cue references base name without extension
@@ -54,7 +54,7 @@ Describe 'Analyze-CueContent' {
     }
 
     It 'marks as Unfixable when referenced audio missing' {
-        $tmp = Join-Path $env:TEMP ([System.Guid]::NewGuid().ToString())
+    $tmp = Join-Path ([System.IO.Path]::GetTempPath()) ([System.Guid]::NewGuid().ToString())
         New-Item -ItemType Directory -Path $tmp | Out-Null
         try {
             $cue = @(
@@ -72,7 +72,7 @@ Describe 'Analyze-CueContent' {
     }
 
     It 'detects TRACK before FILE as structural issue' {
-        $tmp = Join-Path $env:TEMP ([System.Guid]::NewGuid().ToString())
+    $tmp = Join-Path ([System.IO.Path]::GetTempPath()) ([System.Guid]::NewGuid().ToString())
         New-Item -ItemType Directory -Path $tmp | Out-Null
         try {
             $cue = @(

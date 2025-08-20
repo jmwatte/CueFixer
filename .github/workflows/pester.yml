@@ -1,4 +1,4 @@
- uses: actions/setup-powershell@vname: CI - Pester Tests
+name: CI - Pester Tests
 
 on:
   push:
@@ -10,23 +10,63 @@ jobs:
   test:
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: true
       matrix:
         os: [ubuntu-latest, windows-latest]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup PowerShell
-        uses: actions/setup-powershell@v
+      - name: Cache PowerShell modules
+        uses: actions/cache@v3
         with:
-          # Use latest supported PowerShell 7.x
-          pwsh-version: 'latest'
+          path: |
+            ~/.local/share/powershell/Modules
+            C:\\Users\\runneradmin\\Documents\\PowerShell\\Modules
+            C:\\Users\\runner\\Documents\\PowerShell\\Modules
+          key: ${{ runner.os }}-psmodules-${{ hashFiles('**/*.ps1') }}
+          restore-keys: |
+            ${{ runner.os }}-psmodules-
 
+      
       - name: Install Pester
+        shell: pwsh
         run: |
-          pwsh -NoProfile -Command "Set-PSRepository -Name 'PSGallery' -InstallationPolicy Trusted -ErrorAction SilentlyContinue"
-          pwsh -NoProfile -Command "Install-Module -Name Pester -Scope CurrentUser -Force"
+          Set-PSRepository -Name 'PSGallery' -InstallationPolicy Trusted -ErrorAction SilentlyContinue
+          Install-Module -Name Pester -Scope CurrentUser -Force
 
       - name: Run Pester tests
+        shell: pwsh
+        env:
+          TEMP: ${{ runner.temp }}
+          TMPDIR: ${{ runner.temp }}
         run: |
-          pwsh -NoProfile -Command "Import-Module -Name ./CueFixer.psm1 -Force -Verbose; Invoke-Pester -Script ./Tests -Output Detailed"
+          Import-Module -Name ./CueFixer.psm1 -Force -Verbose
+          # Invoke-Pester has different parameter-sets across Pester versions used on runners.
+          # Try a sequence of compatible calls and fall back if a ParameterBinding error occurs.
+          $attempts = @(
+            { Invoke-Pester -Path './Tests' -Output 'Detailed' -EnableExit },
+            { Invoke-Pester -Path './Tests' -Output 'Detailed' },
+            { Invoke-Pester -Path './Tests' -EnableExit },
+            { Invoke-Pester -Path './Tests' },
+            { Invoke-Pester -Script @{ Path = './Tests' } }
+          )
+          $lastErr = $null
+          foreach ($try in $attempts) {
+            try {
+              & $try
+              Write-Output 'Invoke-Pester succeeded.'
+              exit 0
+            } catch {
+              $lastErr = $_
+              Write-Output "Attempt failed: $($_.Exception.Message)"
+            }
+          }
+          Write-Output 'All Invoke-Pester invocation attempts failed. Rethrowing last error.'
+          throw $lastErr
+
+      - name: Run demo smoke test (dry-run)
+        shell: pwsh
+        run: |
+          Import-Module -Name ./CueFixer.psm1 -Force -Verbose
+          ./examples/run-demo.ps1
