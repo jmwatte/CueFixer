@@ -30,7 +30,7 @@ jobs:
             Write-Host "No PSScriptAnalyzer issues found." -ForegroundColor Green
           }
 
-          # Install and run Pester
+          # Install and run Pester (use -Path for Pester v5)
           Install-Module -Name Pester -Force -Scope CurrentUser -Confirm:$false
           Import-Module Pester -Force
-          Invoke-Pester -Script @{ Path = 'Tests' } -EnableExit
+          Invoke-Pester -Path 'Tests' -EnableExit

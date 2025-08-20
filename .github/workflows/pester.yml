@@ -38,7 +38,8 @@ jobs:
         shell: pwsh
         run: |
           Import-Module -Name ./CueFixer.psm1 -Force -Verbose
-          Invoke-Pester -Script @{ Path = './Tests'; Output = 'Detailed' }
+          # Use -Path (Pester v5) instead of legacy -Script hashtable to ensure tests are discovered
+          Invoke-Pester -Path './Tests' -Output 'Detailed' -EnableExit
 
       - name: Run demo smoke test (dry-run)
         shell: pwsh
