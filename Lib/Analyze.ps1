@@ -1,3 +1,23 @@
+<#
+.SYNOPSIS
+Perform a detailed audit of a single .cue file and produce structured analysis.
+
+.DESCRIPTION
+`Get-CueAuditCore` inspects a single .cue file for structural and content
+issues. It returns a PSCustomObject containing Status (Clean, Fixable, Unfixable),
+proposed Fixes, UpdatedLines for the proposed content, StructureErrors and a
+boolean indicating whether a structural fix is needed. This is a pure
+analysis function intended to be called by `Get-CueAudit` and tests.
+
+.PARAMETER CueFilePath
+Path to the .cue file to analyze.
+
+.OUTPUTS
+PSCustomObject with keys: Path, Status, Fixes, UpdatedLines, StructureErrors, NeedsStructureFix
+
+.EXAMPLE
+Get-CueAuditCore -CueFilePath 'C:\Music\Album\album.cue'
+#>
 function Get-CueAuditCore {
     param ([string]$CueFilePath)
 

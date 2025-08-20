@@ -15,14 +15,14 @@ How to run tests locally (recommended)
 
 ```powershell
 Import-Module Pester -RequiredVersion 5.7.1 -Force
-Invoke-Pester -Script .\Tests -Output Detailed
+Invoke-Pester -Script @{ Path = '.\Tests'; Output = 'Detailed' }
 ```
 
 If a crash occurs locally, narrow it by running a single test file or a single `It` block and capture output to a file:
 
 ```powershell
 # single file
-Invoke-Pester -Script .\Tests\Analyze.Tests.ps1 -Output Summary > pester-summary.txt 2>&1
+Invoke-Pester -Script @{ Path = '.\Tests\Analyze.Tests.ps1'; Output = 'Summary' } > pester-summary.txt 2>&1
 
 # single test (edit the file to comment others out) and re-run
 ```

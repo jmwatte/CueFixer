@@ -29,4 +29,8 @@ jobs:
 
       - name: Run Pester tests
         run: |
-          pwsh -NoProfile -Command "Import-Module -Name ./CueFixer.psm1 -Force -Verbose; Invoke-Pester -Script ./Tests -Output Detailed"
+          pwsh -NoProfile -Command "Import-Module -Name ./CueFixer.psm1 -Force -Verbose; Invoke-Pester -Script @{ Path = './Tests'; Output = 'Detailed' }"
+
+      - name: Run demo smoke test (dry-run)
+        run: |
+          pwsh -NoProfile -Command "Import-Module -Name ./CueFixer.psm1 -Force -Verbose; ./.\examples/run-demo.ps1"

@@ -16,7 +16,7 @@ $fixtures = Get-ChildItem -Path $FixturesPath -Filter *.cue -File -Recurse
 foreach ($f in $fixtures) {
     $lines = Get-Content -LiteralPath $f.FullName
     $filesInFolder = Get-ChildItem -LiteralPath $f.DirectoryName -File
-    $candidates = Invoke-HeuristicsEngine -CueFilePath $f.FullName -CueLines $lines -CueFolderFiles $filesInFolder -Context @{ validAudioExts = @('.mp3','.flac','.wav') }
+    $candidates = Invoke-HeuristicsEngine -CueFilePath $f.FullName -CueLines $lines -CueFolderFiles $filesInFolder -Context @{ validAudioExts = @('.mp3','.flac','.wav','.ape') }
 
     $results += [PSCustomObject]@{
         Fixture = $f.FullName

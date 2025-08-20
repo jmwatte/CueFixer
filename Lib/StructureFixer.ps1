@@ -1,3 +1,23 @@
+<#
+.SYNOPSIS
+Normalize structural elements of a .cue file (FILE/TRACK/INDEX) and return fixed text.
+
+.DESCRIPTION
+`Set-CueFileStructure` reads a .cue file and ensures tracks are properly nested
+under FILE blocks and that missing `INDEX 01` entries are inserted where
+appropriate. It returns a hashtable with `Changed` and `FixedText`. When the
+`-WriteChanges` switch is supplied it will write the fixed content back to the
+original file and create a `.bak` backup.
+
+.PARAMETER CueFilePath
+Path to the .cue file to process.
+
+.PARAMETER WriteChanges
+If specified, write the fixed content back to disk and create a `.bak` file.
+
+.EXAMPLE
+Set-CueFileStructure -CueFilePath 'C:\Music\Album\album.cue'
+#>
 function Set-CueFileStructure {
     param (
         [Parameter(Mandatory=$true)] [string]$CueFilePath,

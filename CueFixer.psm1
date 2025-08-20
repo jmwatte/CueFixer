@@ -79,6 +79,6 @@ if (Test-Path $publicDir) {
 
 # Export a minimal, stable public surface
 Export-ModuleMember -Function @(
-    'Get-CueAudit', 'Get-CueAuditCore', 'Apply-Fixes', 'Set-CueFileStructure', 'Repair-CueFile', 'Run-InteractiveFix',
+    'Get-CueAudit', 'Get-CueAuditCore', 'Get-CueContentFix', 'Apply-Fixes', 'Set-CueFileStructure', 'Repair-CueFile', 'Invoke-InteractiveFix',
     'Open-InEditor', 'Show-Fixables', 'Show-Unfixables', 'Show-AuditSummary'
 )
