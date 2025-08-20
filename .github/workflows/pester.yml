@@ -53,6 +53,9 @@ jobs:
 
       - name: Run Pester tests
         shell: pwsh
+        env:
+          TEMP: ${{ runner.temp }}
+          TMPDIR: ${{ runner.temp }}
         run: |
           Import-Module -Name ./CueFixer.psm1 -Force -Verbose
           # Use -Path (Pester v5) instead of legacy -Script hashtable to ensure tests are discovered
