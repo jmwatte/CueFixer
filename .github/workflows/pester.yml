@@ -1,4 +1,4 @@
- uses: actions/setup-powershell@vname: CI - Pester Tests
+name: CI - Pester Tests
 
 on:
   push:
@@ -17,17 +17,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup PowerShell
-        uses: actions/setup-powershell@v
-        with:
-          # Use latest supported PowerShell 7.x
-          pwsh-version: 'latest'
-
       - name: Cache PowerShell modules
         uses: actions/cache@v3
         with:
           path: |
             ~/.local/share/powershell/Modules
+            C:\\Users\\runneradmin\\Documents\\PowerShell\\Modules
+            C:\\Users\\runner\\Documents\\PowerShell\\Modules
           key: ${{ runner.os }}-psmodules-${{ hashFiles('**/*.ps1') }}
           restore-keys: |
             ${{ runner.os }}-psmodules-
