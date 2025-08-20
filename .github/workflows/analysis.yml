@@ -21,6 +21,7 @@ jobs:
           if ($findings) {
             Write-Host "PSScriptAnalyzer found issues:" -ForegroundColor Yellow
             $findings | Format-Table -AutoSize
+            exit 1
           } else {
             Write-Host "No PSScriptAnalyzer issues found." -ForegroundColor Green
           }
