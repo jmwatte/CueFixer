@@ -28,23 +28,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-psmodules-
 
-      - name: Debug PowerShell runner info
-        shell: pwsh
-        run: |
-          Write-Host "Runner OS: $env:RUNNER_OS"
-          pwsh -v
-          Write-Host "PWD: $(Get-Location)"
-          Write-Host "PSModulePath entries:"
-          $env:PSModulePath -split [System.IO.Path]::PathSeparator | ForEach-Object { Write-Host " - $_" }
-          Write-Host "Top-level repo listing (files):"
-          Get-ChildItem -Force -File -Depth 1 | ForEach-Object { Write-Host " - $($_.FullName)" }
-          Write-Host "Tests directory listing (up to depth 3):"
-          if (Test-Path ./Tests) {
-            Get-ChildItem -Path ./Tests -Recurse -Depth 3 -Force | Select-Object -First 200 | ForEach-Object { Write-Host " - $($_.FullName)" }
-          } else {
-            Write-Host " - ./Tests not found"
-          }
-
+      
       - name: Install Pester
         shell: pwsh
         run: |
