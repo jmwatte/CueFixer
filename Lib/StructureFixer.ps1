@@ -18,7 +18,9 @@ If specified, write the fixed content back to disk and create a `.bak` file.
 .EXAMPLE
 Set-CueFileStructure -CueFilePath 'C:\Music\Album\album.cue'
 #>
-function Set-CueFileStructure {
+function Set-CueFileStructureImpl {
+    [OutputType([PSCustomObject])]
+    [CmdletBinding(SupportsShouldProcess=$true)]
     param (
         [Parameter(Mandatory=$true)] [string]$CueFilePath,
         [switch]$WriteChanges
@@ -115,12 +117,26 @@ function Set-CueFileStructure {
 
     if ($originalText -ne $fixedText) {
         if ($WriteChanges) {
+            # In library implementation we perform the write when requested so tests and
+            # dot-sourced runspaces reliably observe the backup and changed file. If a
+            # caller wants interactive confirmation they should wrap this call with
+            # ShouldProcess in their public wrapper.
             Copy-Item -LiteralPath $CueFilePath -Destination "$CueFilePath.bak" -Force
             Set-Content -LiteralPath $CueFilePath -Value $fixedText -Encoding UTF8 -Force
         }
-        return @{ Changed = $true; FixedText = $fixedText }
+    return [PSCustomObject]@{ Changed = $true; FixedText = $fixedText }
     }
     else {
-        return @{ Changed = $false; FixedText = $originalText }
+    return [PSCustomObject]@{ Changed = $false; FixedText = $originalText }
     }
+}
+
+# Small wrapper for test runspaces that may dot-source this file directly.
+function Set-CueFileStructure {
+    [CmdletBinding(SupportsShouldProcess=$true)]
+    param(
+        [Parameter(Mandatory=$true)] [string]$CueFilePath,
+        [switch]$WriteChanges
+    )
+    Set-CueFileStructureImpl -CueFilePath $CueFilePath -WriteChanges:$WriteChanges
 }

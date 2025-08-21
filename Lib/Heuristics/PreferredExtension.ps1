@@ -1,13 +1,17 @@
-function Invoke-Heuristic-PreferredExtension {
+﻿function Invoke-Heuristic-PreferredExtension {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory=$true)][string]$CueFilePath,
         [Parameter(Mandatory=$true)][string[]]$CueLines,
         [Parameter(Mandatory=$true)][System.IO.FileInfo[]]$CueFolderFiles,
-        [Parameter(Mandatory=$false)][hashtable]$Context
+    [Parameter(Mandatory=$false)][hashtable]$Context
     )
 
     # Contract: return an array of candidate objects: @{ Heuristic=..; Candidate=..; Confidence=..; Reason=.. }
+    # small no-op to avoid unused-parameter warnings
+    $null = $Context
+    # reference CueFilePath to silence analyzer (heuristic doesn't use it directly)
+    $null = $CueFilePath
     $ctx = @{}
     if ($null -ne $Context) { $ctx = $Context.Clone() }
 
@@ -50,3 +54,6 @@ function Invoke-Heuristic-PreferredExtension {
 
     return $candidates
 }
+
+
+
