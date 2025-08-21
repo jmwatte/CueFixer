@@ -1,4 +1,4 @@
-# Debug script for PreferredExtension heuristic
+﻿# Debug script for PreferredExtension heuristic
 $heuristicsPath = Join-Path $PSScriptRoot '..\Lib\Heuristics'
 . (Join-Path $heuristicsPath 'PreferredExtension.ps1')
 . (Join-Path $heuristicsPath 'HeuristicsEngine.ps1')
@@ -13,15 +13,17 @@ Set-Content -LiteralPath $audio1 -Value '' -Encoding UTF8
 Set-Content -LiteralPath $audio2 -Value '' -Encoding UTF8
 Set-Content -LiteralPath $cue -Value 'FILE "track01" MP3' -Encoding UTF8
 
-Write-Host "Files in ${tmp}:"
-Get-ChildItem -LiteralPath $tmp -File | ForEach-Object { Write-Host " - $($_.Name) (Extension=$($_.Extension))" }
+Write-Verbose "Files in ${tmp}:"
+Get-ChildItem -LiteralPath $tmp -File | ForEach-Object { Write-Verbose " - $($_.Name) (Extension=$($_.Extension))" }
 
 $lines = Get-Content -LiteralPath $cue
 $files = Get-ChildItem -LiteralPath $tmp -File
 $candidates = Invoke-HeuristicsEngine -CueFilePath $cue -CueLines $lines -CueFolderFiles $files -Context @{ validAudioExts = @('.flac','.mp3') }
 
-Write-Host "Candidates count: $($candidates.Count)"
+Write-Verbose "Candidates count: $($candidates.Count)"
 if ($candidates.Count -gt 0) { $candidates | Format-List -Force }
 
 Remove-Item -LiteralPath $tmp -Recurse -Force
-Write-Host "Debug done"
+Write-Verbose "Debug done"
+
+

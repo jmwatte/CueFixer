@@ -1,4 +1,4 @@
-Describe 'Heuristics: PreferredExtension' {
+﻿Describe 'Heuristics: PreferredExtension' {
     It 'should pick preferred extension when multiple candidates exist' {
         $tmp = New-TemporaryFile
         Remove-Item $tmp -Force
@@ -25,3 +25,5 @@ Describe 'Heuristics: PreferredExtension' {
         Remove-Item -LiteralPath $tmp -Recurse -Force
     }
 }
+
+

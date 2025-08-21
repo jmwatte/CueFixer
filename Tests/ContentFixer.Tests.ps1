@@ -1,4 +1,4 @@
-Describe 'ContentFixer' {
+﻿Describe 'ContentFixer' {
     It 'Detects and returns fixed text when UpdatedLines differ' {
         $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
         $sampleCue = Join-Path $repoRoot 'Tests\Fixtures\album.cue'
@@ -19,3 +19,5 @@ Describe 'ContentFixer' {
         $res.FixedText | Should -Match 'INDEX 01 00:00:00'
     }
 }
+
+
