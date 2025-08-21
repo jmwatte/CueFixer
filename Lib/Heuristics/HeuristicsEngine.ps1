@@ -1,11 +1,11 @@
-﻿# HeuristicsEngine stub
+# HeuristicsEngine stub
 
 function Invoke-HeuristicsEngine {
     param(
-        [Parameter(Mandatory=$true)] [string]$CueFilePath,
-        [Parameter(Mandatory=$true)] [string[]]$CueLines,
-        [Parameter(Mandatory=$true)] [System.IO.FileInfo[]]$CueFolderFiles,
-    [Parameter(Mandatory=$false)] [hashtable]$Context
+        [Parameter(Mandatory = $true)] [string]$CueFilePath,
+        [Parameter(Mandatory = $true)] [string[]]$CueLines,
+        [Parameter(Mandatory = $true)] [System.IO.FileInfo[]]$CueFolderFiles,
+        [Parameter(Mandatory = $false)] [hashtable]$Context
     )
 
     # Load heuristic scripts from Lib/Heuristics if present
@@ -33,6 +33,7 @@ function Invoke-HeuristicsEngine {
 
     return $candidates
 }
+
 
 
 

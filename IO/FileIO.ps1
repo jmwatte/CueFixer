@@ -1,18 +1,18 @@
 function Get-FileContentRaw {
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory=$true, Position=0)] [string]$Path
+        [Parameter(Mandatory = $true, Position = 0)] [string]$Path
     )
 
-    if (-not (Test-Path -LiteralPath $Path)) { Throw "Path not found: $Path" }
+    if (-not (Test-Path -LiteralPath $Path)) { throw "Path not found: $Path" }
     return Get-Content -LiteralPath $Path -Raw -Encoding UTF8
 }
 
 function Save-FileWithBackup {
-    [CmdletBinding(SupportsShouldProcess=$true)]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     param(
-        [Parameter(Mandatory=$true)] [string]$Path,
-        [Parameter(Mandatory=$true)] [string]$Content,
+        [Parameter(Mandatory = $true)] [string]$Path,
+        [Parameter(Mandatory = $true)] [string]$Content,
         [switch]$Backup
     )
 
@@ -26,3 +26,4 @@ function Save-FileWithBackup {
 
     return $false
 }
+
