@@ -8,3 +8,4 @@ if ($findings -and $findings.Count -gt 0) {
 else { Write-Output 'No PSScriptAnalyzer findings in repository' }
 
 
+
