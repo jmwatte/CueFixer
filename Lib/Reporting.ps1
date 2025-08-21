@@ -7,9 +7,10 @@
     # reference param to avoid unused-parameter analyzer warnings
     $null = $Results
 
-    $clean = ($Results | Where-Object { $_.Status -eq 'Clean' }).Count
-    $fixable = ($Results | Where-Object { $_.Status -eq 'Fixable' }).Count
-    $unfixable = ($Results | Where-Object { $_.Status -eq 'Unfixable' }).Count
+    # be defensive: cast status to string, trim whitespace, compare case-insensitively
+    $clean = ($Results | Where-Object { ([string]($_.Status)).Trim() -ieq 'Clean' }).Count
+    $fixable = ($Results | Where-Object { ([string]($_.Status)).Trim() -ieq 'Fixable' }).Count
+    $unfixable = ($Results | Where-Object { ([string]($_.Status)).Trim() -ieq 'Unfixable' }).Count
 
     return [PSCustomObject]@{
         Clean = $clean
