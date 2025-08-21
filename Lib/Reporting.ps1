@@ -1,4 +1,5 @@
-﻿function Get-AuditSummary {
+﻿
+function Get-AuditSummary {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory=$true)] $Results
