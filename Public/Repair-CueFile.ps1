@@ -72,7 +72,7 @@ function Repair-CueFile {
         $res = Set-CueFileStructure -CueFilePath $Path
 
         if ($res.Changed) {
-            Write-Verbose "Changes detected for $Path"
+ 
 
                 if ($DryRun) {
                 Write-Verbose "DryRun enabled; not writing changes for $Path"

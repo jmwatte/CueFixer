@@ -1,4 +1,4 @@
-Describe 'Fixtures demo smoke test' {
+﻿Describe 'Fixtures demo smoke test' {
     It 'Repair-CueFile -DryRun produces the expected fixed cue' {
         # compute repo root and import module
         $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
@@ -50,3 +50,5 @@ Describe 'Fixtures demo smoke test' {
     (Compare-Object -ReferenceObject $expectedLines -DifferenceObject $proposedLines -SyncWindow 0) | Should -BeNullOrEmpty
     }
 }
+
+

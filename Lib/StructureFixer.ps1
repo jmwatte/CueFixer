@@ -30,7 +30,6 @@ function Set-CueFileStructureImpl {
     $reFile = '^\s*FILE\s+"(.+?)"\s+\w+'
     $reTrack = '^\s*TRACK\s+([0-9]+)\s+\w+'
 
-    .DESCRIPTION
     $reIndex0 = '^\s*INDEX\s+00\s+'
     $reIndex1 = '^\s*INDEX\s+01\s+'
     $reMeta = '^\s*(TITLE|PERFORMER|FLAGS|PREGAP)\b'
