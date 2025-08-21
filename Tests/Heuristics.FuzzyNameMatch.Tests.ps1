@@ -1,4 +1,4 @@
-Describe 'Heuristics: FuzzyNameMatch' {
+﻿Describe 'Heuristics: FuzzyNameMatch' {
     It 'should propose a candidate for a near-typo filename' {
         $tmp = New-TemporaryFile; Remove-Item $tmp -Force; New-Item -ItemType Directory -Path $tmp | Out-Null
         $cue = Join-Path $tmp 'album.cue'
@@ -42,3 +42,5 @@ Describe 'Heuristics: FuzzyNameMatch' {
         Remove-Item -LiteralPath $tmp -Recurse -Force
     }
 }
+
+

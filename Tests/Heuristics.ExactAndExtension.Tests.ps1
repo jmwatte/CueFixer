@@ -1,4 +1,4 @@
-Describe 'Heuristics: ExactNameMatch and ExtensionRecovery' {
+﻿Describe 'Heuristics: ExactNameMatch and ExtensionRecovery' {
     It 'ExactNameMatch should propose a fix when filename matches exactly' {
         $tmp = New-TemporaryFile
         Remove-Item $tmp -Force
@@ -45,3 +45,5 @@ Describe 'Heuristics: ExactNameMatch and ExtensionRecovery' {
         Remove-Item -LiteralPath $tmp -Recurse -Force
     }
 }
+
+

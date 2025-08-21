@@ -1,4 +1,4 @@
-# Pester v5 tests for Analyze-CueFile
+﻿# Pester v5 tests for Analyze-CueFile
 Describe 'Analyze-CueContent' {
     BeforeAll {
         # Import the module file so exported functions are registered as commands
@@ -89,3 +89,5 @@ Describe 'Analyze-CueContent' {
         finally { Remove-Item -LiteralPath $tmp -Recurse -Force }
     }
 }
+
+
