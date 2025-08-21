@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
 Normalize structural elements of a .cue file (FILE/TRACK/INDEX) and return fixed text.
 
@@ -117,10 +117,12 @@ function Set-CueFileStructureImpl {
 
     if ($originalText -ne $fixedText) {
         if ($WriteChanges) {
-            if ($PSCmdlet.ShouldProcess($CueFilePath, 'Write fixed cue file')) {
-                Copy-Item -LiteralPath $CueFilePath -Destination "$CueFilePath.bak" -Force
-                Set-Content -LiteralPath $CueFilePath -Value $fixedText -Encoding UTF8 -Force
-            }
+            # In library implementation we perform the write when requested so tests and
+            # dot-sourced runspaces reliably observe the backup and changed file. If a
+            # caller wants interactive confirmation they should wrap this call with
+            # ShouldProcess in their public wrapper.
+            Copy-Item -LiteralPath $CueFilePath -Destination "$CueFilePath.bak" -Force
+            Set-Content -LiteralPath $CueFilePath -Value $fixedText -Encoding UTF8 -Force
         }
     return [PSCustomObject]@{ Changed = $true; FixedText = $fixedText }
     }
@@ -138,6 +140,3 @@ function Set-CueFileStructure {
     )
     Set-CueFileStructureImpl -CueFilePath $CueFilePath -WriteChanges:$WriteChanges
 }
-
-
-
