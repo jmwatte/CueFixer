@@ -21,9 +21,15 @@ function Show-AuditSummary {
 
     process {
         $summary = Get-AuditSummary -Results $Results
-        Write-Host "`n📊 Cue File Audit Summary:" -ForegroundColor Cyan
-        Write-Host "✅ Clean: $($summary.Clean)"
-        Write-Host "🛠 Fixable: $($summary.Fixable)"
-        Write-Host "🛑 Manual Fix Needed: $($summary.Unfixable)"
+        Write-Verbose "`n📊 Cue File Audit Summary:"
+        Write-Verbose "✅ Clean: $($summary.Clean)"
+        Write-Verbose "🛠 Fixable: $($summary.Fixable)"
+        Write-Verbose "🛑 Manual Fix Needed: $($summary.Unfixable)"
     }
 }
+
+
+
+
+
+

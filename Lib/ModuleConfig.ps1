@@ -1,4 +1,4 @@
-# ModuleConfig.ps1
+﻿# ModuleConfig.ps1
 # Centralized module configuration for CueFixer.
 # Defines variables in the script: scope so dot-sourced library files can access them.
 
@@ -7,3 +7,6 @@ $script:validAudioExts = @('.flac', '.mp3', '.wav', '.aac', '.ogg', '.m4a', '.ai
 
 # Preferred external editor (user can override by setting $script:preferredEditor before dot-sourcing)
 $script:preferredEditor = 'hx'
+
+
+

@@ -31,6 +31,7 @@ This cmdlet modifies files on disk when not run with `-DryRun`. Use `-WhatIf` or
 `-Confirm` (supported) to preview destructive operations.
 #>
 function Repair-CueFile {
+    [OutputType([PSCustomObject])]
     [CmdletBinding(SupportsShouldProcess=$true)]
     param(
     [Parameter(Mandatory=$false, Position=0, ValueFromPipeline=$true, ValueFromPipelineByPropertyName=$true)]
@@ -65,31 +66,34 @@ function Repair-CueFile {
 
         if (-not (Test-Path -LiteralPath $Path)) {
             Write-Warning "Path not found: $Path"
-            return @{ Path = $Path; Changed = $false; Error = 'NotFound' }
+            return [PSCustomObject]@{ Path = $Path; Changed = $false; Error = 'NotFound' }
         }
 
         $res = Set-CueFileStructure -CueFilePath $Path
 
         if ($res.Changed) {
-            Write-Verbose "Changes detected for $Path"
+ 
 
-            if ($DryRun) {
+                if ($DryRun) {
                 Write-Verbose "DryRun enabled; not writing changes for $Path"
                 # return what would have changed
-                return @{ Path = $Path; Changed = $true; DryRun = $true; Proposed = $res.FixedText }
+                return [PSCustomObject]@{ Path = $Path; Changed = $true; DryRun = $true; Proposed = $res.FixedText }
             }
 
             # Confirm/WhatIf support via Save-FileWithBackup
             if ($PSCmdlet.ShouldProcess($Path, 'Write fixed cue file')) {
                 $wrote = Save-FileWithBackup -Path $Path -Content $res.FixedText -Backup:$Backup
-                return @{ Path = $Path; Changed = $wrote; Backup = [bool]$Backup }
+                return [PSCustomObject]@{ Path = $Path; Changed = $wrote; Backup = [bool]$Backup }
             }
             else {
-                return @{ Path = $Path; Changed = $false; SkippedByShouldProcess = $true }
+                return [PSCustomObject]@{ Path = $Path; Changed = $false; SkippedByShouldProcess = $true }
             }
         }
         else {
-            return @{ Path = $Path; Changed = $false }
+            return [PSCustomObject]@{ Path = $Path; Changed = $false }
         }
     }
 }
+
+
+

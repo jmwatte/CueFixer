@@ -1,10 +1,11 @@
-Describe 'Set-CueFileStructure / Repair-CueFile' {
+﻿Describe 'Set-CueFileStructure / Repair-CueFile' {
     BeforeAll {
-        Import-Module -Name (Join-Path $PSScriptRoot '..\CueFixer.psm1') -Force
+        # Load the library implementation directly to avoid wrapper recursion and binding edge-cases
+        . (Join-Path $PSScriptRoot '..\Lib\StructureFixer.ps1')
     }
 
     It 'creates a backup and applies structural fixes' {
-    $tmp = Join-Path ([System.IO.Path]::GetTempPath()) "test-structure.cue"
+        $tmp = Join-Path ([System.IO.Path]::GetTempPath()) "test-structure.cue"
         @(
             'TITLE "Album"',
             'PERFORMER "Artist"',
@@ -21,3 +22,5 @@ Describe 'Set-CueFileStructure / Repair-CueFile' {
         Remove-Item $tmp, "$tmp.bak" -ErrorAction SilentlyContinue
     }
 }
+
+

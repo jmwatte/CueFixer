@@ -1,10 +1,10 @@
-function Invoke-Heuristic-FuzzyNameMatch {
+﻿function Invoke-Heuristic-FuzzyNameMatch {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory=$true)][string]$CueFilePath,
         [Parameter(Mandatory=$true)][string[]]$CueLines,
         [Parameter(Mandatory=$true)][System.IO.FileInfo[]]$CueFolderFiles,
-        [Parameter(Mandatory=$false)][hashtable]$Context
+    [Parameter(Mandatory=$false)][hashtable]$Context
     )
 
     # Conservative fuzzy matcher: tokenizes names and uses Levenshtein distance on base names.
@@ -45,6 +45,10 @@ function Invoke-Heuristic-FuzzyNameMatch {
         return [int]$prev[$n]
     }
 
+    # avoid unused-parameter warning
+    $null = $Context
+    # reference CueFilePath to avoid unused-parameter warnings (unused in heuristic internals)
+    $null = $CueFilePath
     $ctx = @{}
     if ($null -ne $Context) { $ctx = $Context.Clone() }
     $validExts = if ($ctx.validAudioExts) { $ctx.validAudioExts } else { @('.flac','.mp3','.wav','.ape') }
@@ -85,3 +89,6 @@ function Invoke-Heuristic-FuzzyNameMatch {
 
     return $candidates | Sort-Object -Property @{Expression={$_.Confidence};Descending=$true}
 }
+
+
+

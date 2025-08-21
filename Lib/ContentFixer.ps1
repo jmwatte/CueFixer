@@ -1,4 +1,4 @@
-function Get-CueContentFix {
+﻿function Get-CueContentFixImpl {
     <#
     .SYNOPSIS
     Build fixed cue content from updated lines and report whether changes exist.
@@ -31,9 +31,21 @@ function Get-CueContentFix {
     $fixedText = $fixedLines -join "`r`n"
 
     if ($originalText -ne $fixedText) {
-        return @{ Changed = $true; FixedText = $fixedText }
+        return [PSCustomObject]@{ Changed = $true; FixedText = $fixedText }
     }
     else {
-        return @{ Changed = $false; FixedText = $originalText }
+        return [PSCustomObject]@{ Changed = $false; FixedText = $originalText }
     }
 }
+
+# Public wrapper for compatibility
+function Get-CueContentFix {
+    param(
+        [Parameter(Mandatory=$true)] [string]$CueFilePath,
+        [Parameter(Mandatory=$true)] [System.Collections.IEnumerable]$UpdatedLines
+    )
+    Get-CueContentFixImpl -CueFilePath $CueFilePath -UpdatedLines $UpdatedLines
+}
+
+
+

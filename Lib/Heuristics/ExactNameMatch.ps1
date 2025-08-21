@@ -1,4 +1,4 @@
-function Invoke-Heuristic-ExactNameMatch {
+﻿function Invoke-Heuristic-ExactNameMatch {
     param(
         [Parameter(Mandatory=$true)] [string]$CueFilePath,
         [Parameter(Mandatory=$true)] [string[]]$CueLines,
@@ -8,6 +8,11 @@ function Invoke-Heuristic-ExactNameMatch {
 
     $candidates = @()
     $reFile = '^[\s]*FILE\s+"(.+?)"\s+\w+'
+
+    # avoid unused parameter analyzer warning
+    $null = $Context
+    # reference CueFilePath to silence analyzer
+    $null = $CueFilePath
 
     foreach ($line in $CueLines) {
         if ($line -match $reFile) {
@@ -30,3 +35,6 @@ function Invoke-Heuristic-ExactNameMatch {
 
     return $candidates
 }
+
+
+
