@@ -16,7 +16,7 @@ If specified, show proposed replacement content for fixable files.
 .EXAMPLE
 Get-CueAudit -Path . | Show-Fixables -DryRun
 #>
-function Show-Fixables {
+function Show-Fixable {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory=$true, ValueFromPipeline=$true)] $Results,
@@ -25,12 +25,17 @@ function Show-Fixables {
 
     process {
         foreach ($cue in $Results | Where-Object { $_.Status -eq 'Fixable' }) {
-            Write-Host "`n🔍 Processing: $($cue.Path)" -ForegroundColor Cyan
+            Write-Verbose "`n\ud83d\udd0d Processing: $($cue.Path)"
             foreach ($fix in $cue.Fixes) {
-                Write-Host "❌ OLD: $($fix.Old)" -ForegroundColor DarkYellow
-                Write-Host "✅ NEW: $($fix.New)" -ForegroundColor Yellow
+                Write-Verbose "\u274c OLD: $($fix.Old)"
+                Write-Verbose "\u2705 NEW: $($fix.New)"
             }
-            if ($DryRun) { Write-Host "🧪 Dry-run mode — no changes saved." -ForegroundColor DarkCyan }
+            if ($DryRun) { Write-Verbose "\ud83e\uddea Dry-run mode \u2014 no changes saved." }
         }
     }
 }
+
+
+
+
+
