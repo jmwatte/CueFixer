@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
 Safe wrapper to run Pester v5 using the -Script hashtable form.
 
@@ -22,6 +22,8 @@ param(
     [switch]$EnableExit
 )
 
+$null = $Output
+
 try {
     Import-Module Pester -ErrorAction Stop -Force
 }
@@ -40,7 +42,7 @@ catch {
     return
 }
 
-Write-Host "Running Invoke-Pester against: $($absPath.ProviderPath)"
+Write-Verbose "Running Invoke-Pester against: $($absPath.ProviderPath)"
 
 # Invoke Pester using a plain path string to avoid legacy parameter-set parsing issues
 $rc = 0
@@ -54,5 +56,7 @@ catch {
     $rc = 1
 }
 
-Write-Host "Pester finished (exit code $rc)"
+Write-Verbose "Pester finished (exit code $rc)"
 if ($EnableExit) { exit $rc } else { return $rc }
+
+

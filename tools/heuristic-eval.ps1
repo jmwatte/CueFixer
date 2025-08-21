@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
 Run heuristics engine against fixture corpus and produce a CSV report.
 
@@ -25,4 +25,5 @@ foreach ($f in $fixtures) {
 }
 
 $results | Export-Csv -Path $OutCsv -NoTypeInformation -Force
-Write-Host "Wrote $OutCsv"
+Write-Verbose "Wrote $OutCsv"
+
