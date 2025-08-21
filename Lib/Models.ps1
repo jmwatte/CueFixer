@@ -1,4 +1,3 @@
-﻿
 function New-CueModel {
     [CmdletBinding()]
     param(
@@ -13,6 +12,3 @@ function New-CueModel {
         Status = $Status
     }
 }
-
-
-

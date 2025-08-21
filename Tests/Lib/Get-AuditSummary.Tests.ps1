@@ -1,6 +1,6 @@
 Describe 'Get-AuditSummary' {
     It 'summarizes results correctly' {
-        . $PSScriptRoot/../../Lib/Reporting.ps1
+        . "$PSScriptRoot/../../Lib/Reporting.ps1"
         $samples = @(
             @{ Path = 'a.cue'; Status = 'Clean' }
             @{ Path = 'b.cue'; Status = 'Fixable' }
