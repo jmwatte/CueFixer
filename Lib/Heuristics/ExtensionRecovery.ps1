@@ -1,4 +1,4 @@
-function Invoke-Heuristic-ExtensionRecovery {
+﻿function Invoke-Heuristic-ExtensionRecovery {
     param(
         [Parameter(Mandatory=$true)] [string]$CueFilePath,
         [Parameter(Mandatory=$true)] [string[]]$CueLines,
@@ -7,7 +7,11 @@ function Invoke-Heuristic-ExtensionRecovery {
     )
 
     $candidates = @()
-    $validExts = if ($Context -and $Context.validAudioExts) { $Context.validAudioExts } else { @('.mp3','.flac','.wav','.ape') }
+        # reference Context to avoid unused-parameter warnings
+        $null = $Context
+        # reference CueFilePath to avoid unused-parameter warning (heuristics don't need full path)
+        $null = $CueFilePath
+        $validExts = if ($Context -and $Context.validAudioExts) { $Context.validAudioExts } else { @('.mp3','.flac','.wav','.ape') }
     $reFile = '^[\s]*FILE\s+"(.+?)"\s+\w+'
 
     foreach ($line in $CueLines) {
@@ -46,3 +50,6 @@ function Invoke-Heuristic-ExtensionRecovery {
 
     return $candidates
 }
+
+
+

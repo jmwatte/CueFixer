@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
 Perform a detailed audit of a single .cue file and produce structured analysis.
 
@@ -18,7 +18,7 @@ PSCustomObject with keys: Path, Status, Fixes, UpdatedLines, StructureErrors, Ne
 .EXAMPLE
 Get-CueAuditCore -CueFilePath 'C:\Music\Album\album.cue'
 #>
-function Get-CueAuditCore {
+function Get-CueAuditCoreImpl {
     param ([string]$CueFilePath)
 
     # Keep behavior compatible with original script but live in Lib/ for testability
@@ -141,3 +141,12 @@ function Get-CueAuditCore {
         NeedsStructureFix = $needsStructureFix
     }
 }
+
+# Provide a stable exported wrapper name that calls the implementation.
+function Get-CueAuditCore {
+    param ([string]$CueFilePath)
+    Get-CueAuditCoreImpl -CueFilePath $CueFilePath
+}
+
+
+

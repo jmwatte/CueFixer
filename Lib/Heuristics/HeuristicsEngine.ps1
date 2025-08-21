@@ -1,11 +1,11 @@
-# HeuristicsEngine stub
+﻿# HeuristicsEngine stub
 
 function Invoke-HeuristicsEngine {
     param(
         [Parameter(Mandatory=$true)] [string]$CueFilePath,
         [Parameter(Mandatory=$true)] [string[]]$CueLines,
         [Parameter(Mandatory=$true)] [System.IO.FileInfo[]]$CueFolderFiles,
-        [Parameter(Mandatory=$false)] [hashtable]$Context
+    [Parameter(Mandatory=$false)] [hashtable]$Context
     )
 
     # Load heuristic scripts from Lib/Heuristics if present
@@ -14,6 +14,8 @@ function Invoke-HeuristicsEngine {
         Get-ChildItem -Path $heuristicsDir -Filter *.ps1 -File | ForEach-Object { . $_.FullName }
     }
 
+    # avoid unused-parameter analyzer finding
+    $null = $Context
     $candidates = @()
     # Call known heuristics if functions are available
     if (Get-Command -Name Invoke-Heuristic-ExactNameMatch -ErrorAction SilentlyContinue) {
@@ -31,3 +33,6 @@ function Invoke-HeuristicsEngine {
 
     return $candidates
 }
+
+
+
