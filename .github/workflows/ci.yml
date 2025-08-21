@@ -13,8 +13,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup PowerShell
-        uses: actions/setup-powershell@v2
+  # Use runner's preinstalled PowerShell Core (pwsh). Removing broken third-party action.
 
       - name: Run format check
         shell: pwsh
