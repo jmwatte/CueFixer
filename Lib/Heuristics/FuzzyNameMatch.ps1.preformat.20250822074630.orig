@@ -1,0 +1,97 @@
+﻿function Invoke-Heuristic-FuzzyNameMatch {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory=$true)][string]$CueFilePath,
+        [Parameter(Mandatory=$true)][string[]]$CueLines,
+        [Parameter(Mandatory=$true)][System.IO.FileInfo[]]$CueFolderFiles,
+    [Parameter(Mandatory=$false)][hashtable]$Context
+    )
+
+    # Conservative fuzzy matcher: tokenizes names and uses Levenshtein distance on base names.
+    # Returns PSCustomObject candidates: @{ Heuristic, Candidate, Confidence, Reason }
+
+    function Get-LevenshteinDistance {
+        param([string]$s, [string]$t)
+        $s = [string]$s; $t = [string]$t
+        if ($s -eq $t) { return 0 }
+        if ([string]::IsNullOrEmpty($s)) { return $t.Length }
+        if ([string]::IsNullOrEmpty($t)) { return $s.Length }
+
+        $m = $s.Length
+        $n = $t.Length
+
+        # Use two-row DP to avoid multi-dimensional arrays and ensure integer math
+        $prev = New-Object 'int[]' ($n + 1)
+        $curr = New-Object 'int[]' ($n + 1)
+
+        for ($j = 0; $j -le $n; $j++) { $prev[$j] = [int]$j }
+
+        for ($i = 1; $i -le $m; $i++) {
+            $curr[0] = [int]$i
+            $si = $s.Substring($i - 1, 1)
+            for ($j = 1; $j -le $n; $j++) {
+                $tj = $t.Substring($j - 1, 1)
+                $cost = if ($si -eq $tj) { 0 } else { 1 }
+                $del = [int]$prev[$j] + 1
+                $ins = [int]$curr[$j - 1] + 1
+                $sub = [int]$prev[$j - 1] + $cost
+                if ($del -lt $ins) { $curr[$j] = if ($del -lt $sub) { $del } else { $sub } }
+                else { $curr[$j] = if ($ins -lt $sub) { $ins } else { $sub } }
+            }
+            # swap prev and curr arrays
+            $temp = $prev; $prev = $curr; $curr = $temp
+        }
+
+        return [int]$prev[$n]
+    }
+
+    # avoid unused-parameter warning
+    $null = $Context
+    # reference CueFilePath to avoid unused-parameter warnings (unused in heuristic internals)
+    $null = $CueFilePath
+    $ctx = @{}
+    if ($null -ne $Context) { $ctx = $Context.Clone() }
+    $validExts = if ($ctx.validAudioExts) { $ctx.validAudioExts } else { @('.flac','.mp3','.wav','.ape') }
+
+    $candidates = @()
+
+    foreach ($line in $CueLines) {
+        if ($line -match 'FILE\s+"(?<name>[^"]+)"') {
+            $token = $Matches['name']
+            $tokenBase = [string]([System.IO.Path]::GetFileNameWithoutExtension($token) -replace '[^A-Za-z0-9]','')
+
+            # Compare against files in folder filtered by valid extensions
+            $pool = $CueFolderFiles | Where-Object { $validExts -contains ($_.Extension.ToLower()) }
+            foreach ($f in $pool) {
+                $candidateBase = [string]([System.IO.Path]::GetFileNameWithoutExtension($f.Name) -replace '[^A-Za-z0-9]','')
+                if ([string]::IsNullOrEmpty($candidateBase) -or [string]::IsNullOrEmpty($tokenBase)) { continue }
+                $tokenLen = [int][string]::IsNullOrEmpty($tokenBase) ? 0 : $tokenBase.Length
+                $candLen = [int][string]::IsNullOrEmpty($candidateBase) ? 0 : $candidateBase.Length
+                if ($candLen -lt 2 -or $tokenLen -lt 2) { continue }
+                $dist = Get-LevenshteinDistance -s $tokenBase.ToLower() -t $candidateBase.ToLower()
+                $maxLen = [Math]::Max($tokenLen, $candLen)
+                if ($maxLen -eq 0) { continue }
+                $norm = 1.0 - ($dist / $maxLen)
+                # Conservative thresholds: require normalized similarity >= 0.75 to propose candidate
+                if ($norm -ge 0.75) {
+                    # Confidence scaled between 0.5 and 0.9 based on norm
+                    $confidence = 0.5 + ([Math]::Round((($norm - 0.75) / 0.25) * 0.4, 2))
+                    $candidates += [pscustomobject]@{
+                        Heuristic = 'FuzzyNameMatch'
+                        Candidate = $f.Name
+                        Confidence = [Math]::Min($confidence, 0.95)
+                        Reason = "Fuzzy match between '$token' and '$($f.Name)' (similarity=$([Math]::Round($norm,2)))"
+                    }
+                }
+            }
+        }
+    }
+
+    return $candidates | Sort-Object -Property @{Expression={$_.Confidence};Descending=$true}
+}
+
+
+
+
+
+
