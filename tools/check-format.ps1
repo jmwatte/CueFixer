@@ -12,8 +12,25 @@ New-Item -Path $tempRoot -ItemType Directory | Out-Null
 Write-Output "Copying repo to: $tempRoot"
 
 # Use PowerShell copy fallback for portability
+# Perform a copy of the repo into the temp area.
+# Prefer robocopy on Windows (preserves timestamps/attributes/encoding better); fall back to Copy-Item otherwise.
 Write-Output "Performing copy..."
-Copy-Item -Path (Join-Path $repoRoot '*') -Destination $tempRoot -Recurse -Force -ErrorAction Stop
+$useRobo = $false
+if ($env:OS -eq 'Windows_NT' -and (Get-Command robocopy -ErrorAction SilentlyContinue)) { $useRobo = $true }
+if ($useRobo) {
+    $source = $repoRoot.ProviderPath.TrimEnd('\')
+    $dest = $tempRoot
+    Write-Output "Using robocopy to copy (preserve attributes): $source -> $dest"
+    $robocopyArgs = @($source, $dest, '/MIR', '/COPYALL', '/DCOPY:T', '/R:1', '/W:1')
+    & robocopy @robocopyArgs | Out-Null
+    if ($LASTEXITCODE -ge 8) {
+        Write-Error "robocopy failed with exit code $LASTEXITCODE"
+        Remove-Item -LiteralPath $tempRoot -Recurse -Force
+        exit 3
+    }
+} else {
+    Copy-Item -Path (Join-Path $repoRoot '*') -Destination $tempRoot -Recurse -Force -ErrorAction Stop
+}
 
 # Run the formatting helper in the temp copy if present
 $formatScript = Join-Path $tempRoot 'tools\format-repo.ps1'
@@ -29,7 +46,8 @@ else {
 
 # Compare relevant files
 $exts = '*.ps1','*.psm1','*.psd1'
-$orig = Get-ChildItem -Path $repoRoot -Include $exts -Recurse -File | Where-Object { $_.FullName -notmatch '\\.git\\' }
+$excludeNamePattern = '\.preformat\..*\.orig$|\.bak$'
+$orig = Get-ChildItem -Path $repoRoot -Include $exts -Recurse -File | Where-Object { $_.FullName -notmatch '\\.git\\' -and $_.Name -notmatch $excludeNamePattern }
 $temp = Get-ChildItem -Path $tempRoot -Include $exts -Recurse -File | Where-Object { $_.FullName -notmatch '\\.git\\' }
 
 $differences = @()
