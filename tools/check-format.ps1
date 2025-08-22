@@ -23,6 +23,46 @@ if ($useRobo) {
     Write-Output "Using robocopy to copy (preserve attributes): $source -> $dest"
     $robocopyArgs = @($source, $dest, '/MIR', '/COPYALL', '/DCOPY:T', '/R:1', '/W:1')
     & robocopy @robocopyArgs | Out-Null
+    $rc = $LASTEXITCODE
+    if ($rc -ne 0) {
+        # robocopy non-zero codes can indicate copy warnings or errors.
+        # If robocopy failed severely (>=8) try a PowerShell fallback before aborting.
+        Write-Warning "robocopy returned exit code $rc; attempting Copy-Item fallback"
+        try {
+            Copy-Item -Path (Join-Path $repoRoot '*') -Destination $tempRoot -Recurse -Force -ErrorAction Stop
+            Write-Output "Copy-Item fallback succeeded"
+        }
+        catch {
+            Write-Error "robocopy failed with exit code $rc and Copy-Item fallback failed: $_"
+            Remove-Item -LiteralPath $tempRoot -Recurse -Force
+            exit 3
+        }
+    }
+} else {
+    Copy-Item -Path (Join-Path $repoRoot '*') -Destination $tempRoot -Recurse -Force -ErrorAction Stop
+}
+
+# Run the formatting helper in the temp copy if present
+$formatScript = Join-Path $tempRoot 'tools\format-repo.ps1'
+# Non-destructive formatting check: copies the repo to a temp folder, runs the formatting helper there, and fails if any file would change.
+
+$repoRoot = Resolve-Path -Path (Join-Path $PSScriptRoot '..')
+$tempRoot = Join-Path -Path $env:TEMP -ChildPath ("cuefixer-format-check-" + [Guid]::NewGuid().ToString())
+New-Item -Path $tempRoot -ItemType Directory | Out-Null
+Write-Output "Copying repo to: $tempRoot"
+
+# Use PowerShell copy fallback for portability
+# Perform a copy of the repo into the temp area.
+# Prefer robocopy on Windows (preserves timestamps/attributes/encoding better); fall back to Copy-Item otherwise.
+Write-Output "Performing copy..."
+$useRobo = $false
+if ($env:OS -eq 'Windows_NT' -and (Get-Command robocopy -ErrorAction SilentlyContinue)) { $useRobo = $true }
+if ($useRobo) {
+    $source = $repoRoot.ProviderPath.TrimEnd('\')
+    $dest = $tempRoot
+    Write-Output "Using robocopy to copy (preserve attributes): $source -> $dest"
+    $robocopyArgs = @($source, $dest, '/MIR', '/COPYALL', '/DCOPY:T', '/R:1', '/W:1')
+    & robocopy @robocopyArgs | Out-Null
     if ($LASTEXITCODE -ge 8) {
         Write-Error "robocopy failed with exit code $LASTEXITCODE"
         Remove-Item -LiteralPath $tempRoot -Recurse -Force
@@ -76,6 +116,7 @@ else {
     Remove-Item -LiteralPath $tempRoot -Recurse -Force
     exit 0
 }
+
 
 
 
