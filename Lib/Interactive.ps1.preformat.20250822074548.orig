@@ -1,0 +1,75 @@
+﻿function Invoke-InteractiveFixImpl {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
+        [System.Collections.ArrayList]$CueFiles
+    )
+
+    begin {
+        if (-not $CueFiles) { return }
+    }
+
+    process {
+        $groupedByFolder = $CueFiles | Group-Object { $_.DirectoryName }
+
+        foreach ($group in $groupedByFolder) {
+            Clear-Host
+            $folderPath = $group.Name
+            $filesInFolder = $group.Group
+
+            Write-Verbose "`n📁 Folder: $folderPath"
+            Write-Verbose "Found $($filesInFolder.Count) .cue file(s):"
+            $filesInFolder | ForEach-Object { Write-Verbose "  - $($_.Name)" }
+
+            # Analyze all files in folder
+            $results = foreach ($cue in $filesInFolder) { Get-CueAuditCore -CueFilePath $cue.FullName }
+
+            if ((($results | Where-Object { $_.Status -ne 'Clean' }) | Measure-Object).Count -eq 0) {
+                Write-Verbose "✅ All files are clean. Skipping folder..."
+                continue
+            }
+
+            $retry = $false
+            do {
+                Write-Verbose "`n🧪 Previewing changes (DryRun)..."
+                    Show-Fixable -Results $results -DryRun
+                    Show-Unfixable -Results $results
+
+                $choice = Read-Host "`nApply changes? [A] Apply  [S] Skip  [E] Edit  [P] Play  [Q] Quit  [R] Retry (Enter = Skip)"
+
+                switch ($choice.ToUpper()) {
+                    '' { Write-Verbose "⏭️ Skipping folder..."; $retry = $false }
+                    'S' { Write-Verbose "⏭️ Skipping folder..."; $retry = $false }
+                    'A' {
+                        Invoke-ApplyFix -Results $results
+                        $retry = $false
+                    }
+                    'E' {
+                        Write-Verbose "📝 Opening first cue file in default editor..."
+                        Open-InEditor $filesInFolder[0].FullName
+                        $retry = $true
+                    }
+                    'P' {
+                        Write-Verbose "🎵 Playing first cue file..."
+                        Start-Process $filesInFolder[0].FullName
+                        $retry = $true
+                    }
+                    'Q' { Write-Verbose "👋 Quitting script."; exit }
+                    'R' {
+                        Write-Verbose "🔁 Retrying analysis..."
+                        # Re-analyze before retrying
+                        $results = foreach ($cue in $filesInFolder) { Get-CueAuditCore -CueFilePath $cue.FullName }
+                        $retry = $true
+                    }
+                    default { Write-Verbose "❓ Invalid choice. Please try again..."; $retry = $true }
+                }
+            } while ($retry)
+        }
+    }
+}
+
+
+
+
+
+
