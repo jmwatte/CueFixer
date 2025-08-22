@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
 Interactive review and application of repairs for .cue files in a folder.
 
@@ -30,6 +30,8 @@ function Invoke-InteractiveFix {
         Invoke-InteractiveFixImpl -CueFiles $CueFiles
     }
 }
+
+
 
 
 

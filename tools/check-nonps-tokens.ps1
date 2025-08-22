@@ -1,4 +1,4 @@
-<#
+﻿<#
 Lint script to detect non-PowerShell tokens embedded in .ps1 files that could break dot-sourcing or module loading.
 Checks:
 - Triple backtick fences (```) which are commonly from Markdown pasted into scripts.
@@ -75,3 +75,5 @@ $issues | Format-Table -AutoSize
 
 Write-Host "Failing lint to prevent merge; please remove embedded Markdown fences or stray tokens from .ps1/.psm1 files." -ForegroundColor Red
 exit 1
+
+

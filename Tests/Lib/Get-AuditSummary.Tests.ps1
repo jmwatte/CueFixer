@@ -1,4 +1,4 @@
-Describe 'Get-AuditSummary' {
+﻿Describe 'Get-AuditSummary' {
     It 'summarizes results correctly' {
         . "$PSScriptRoot/../../Lib/Reporting.ps1"
         $samples = @(
@@ -15,3 +15,5 @@ Describe 'Get-AuditSummary' {
         $summary.Unfixable | Should -Be 1
     }
 }
+
+

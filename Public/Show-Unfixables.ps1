@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
 Display unfixable issues discovered by `Get-CueAudit`.
 
@@ -25,6 +25,8 @@ function Show-Unfixable {
         }
     }
 }
+
+
 
 
 

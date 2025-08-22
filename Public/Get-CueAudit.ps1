@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
 Performs an audit of one or more .cue files and returns structured audit objects.
 
@@ -41,6 +41,8 @@ function Get-CueAudit {
 }
 
 Export-ModuleMember -Function Get-CueAudit
+
+
 
 
 

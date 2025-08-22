@@ -1,4 +1,4 @@
-<#
+﻿<#
 CueFixer.psm1
 
 This module file safely defines the functions from the legacy `cleanCueFiles.ps1`
@@ -82,3 +82,5 @@ Export-ModuleMember -Function @(
     'Get-CueAudit', 'Get-CueAuditCore', 'Get-CueContentFix', 'Apply-Fixes', 'Set-CueFileStructure', 'Repair-CueFile', 'Invoke-InteractiveFix',
     'Open-InEditor', 'Show-Fixables', 'Show-Unfixables', 'Show-AuditSummary'
 )
+
+

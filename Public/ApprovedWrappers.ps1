@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
 Approved-verb wrappers for legacy functions to satisfy PSScriptAnalyzer and provide a stable public API.
 #>
@@ -58,6 +58,8 @@ function Invoke-ApplyFix {
 
 # Back-compat plural wrapper — call the singular public function.
     # NOTE: plural `Invoke-ApplyFixes` removed; canonical public command is `Invoke-ApplyFix`.
+
+
 
 
 

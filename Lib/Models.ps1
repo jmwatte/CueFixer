@@ -1,4 +1,4 @@
-function New-CueModel {
+﻿function New-CueModel {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory=$true)]
@@ -12,3 +12,5 @@ function New-CueModel {
         Status = $Status
     }
 }
+
+

@@ -1,4 +1,4 @@
-param(
+﻿param(
 	[switch]$Apply
 )
 
@@ -65,3 +65,5 @@ else {
 	exit 1
 }
 Write-Host 'No trivial non-PS tokens found outside block comments.' -ForegroundColor Green
+
+

@@ -1,4 +1,4 @@
-Describe 'New-CueModel' {
+﻿Describe 'New-CueModel' {
     It 'creates a model with given path and status' {
         . $PSScriptRoot/../../Lib/Models.ps1
 
@@ -8,3 +8,5 @@ Describe 'New-CueModel' {
         $m.Status | Should -Be 'Fixable'
     }
 }
+
+

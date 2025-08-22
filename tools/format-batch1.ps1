@@ -1,4 +1,4 @@
-# Batch formatter: format a small, safe set of files (tools and .vscode/tools)
+﻿# Batch formatter: format a small, safe set of files (tools and .vscode/tools)
 $files = @(
     '.vscode\tools\add-bom.ps1',
     '.vscode\tools\mcp-client.ps1',
@@ -26,3 +26,5 @@ foreach ($rel in $files) {
     } catch { Write-Warning "Write failed: $rel -> $_" }
 }
 Write-Output 'BATCH1_DONE'
+
+

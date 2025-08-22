@@ -1,4 +1,4 @@
-# Demo script to exercise the README "Try it" example.
+﻿# Demo script to exercise the README "Try it" example.
 # Import the module from repo root and run an audit + dry-run repair against Tests\Fixtures.
 
 # Compute repository root reliably relative to this script's folder
@@ -23,3 +23,5 @@ Write-Host "Running Repair-CueFile in DryRun mode..." -ForegroundColor Cyan
 $audits | Repair-CueFile -DryRun -Verbose
 
 Write-Host "Demo complete." -ForegroundColor Green
+
+

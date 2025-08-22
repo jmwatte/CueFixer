@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
 Display fixable issues discovered by `Get-CueAudit`.
 
@@ -34,6 +34,8 @@ function Show-Fixable {
         }
     }
 }
+
+
 
 
 

@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
 Apply structural fixes to a .cue file and write changes (creates a .bak backup).
 
@@ -72,7 +72,7 @@ function Repair-CueFile {
         $res = Set-CueFileStructure -CueFilePath $Path
 
         if ($res.Changed) {
- 
+
 
                 if ($DryRun) {
                 Write-Verbose "DryRun enabled; not writing changes for $Path"
@@ -94,6 +94,8 @@ function Repair-CueFile {
         }
     }
 }
+
+
 
 
 
