@@ -1,9 +1,9 @@
-﻿function Invoke-Heuristic-ExactNameMatch {
+function Invoke-Heuristic-ExactNameMatch {
     param(
-        [Parameter(Mandatory=$true)] [string]$CueFilePath,
-        [Parameter(Mandatory=$true)] [string[]]$CueLines,
-        [Parameter(Mandatory=$true)] [System.IO.FileInfo[]]$CueFolderFiles,
-        [Parameter(Mandatory=$false)] [hashtable]$Context
+        [Parameter(Mandatory = $true)] [string]$CueFilePath,
+        [Parameter(Mandatory = $true)] [string[]]$CueLines,
+        [Parameter(Mandatory = $true)] [System.IO.FileInfo[]]$CueFolderFiles,
+        [Parameter(Mandatory = $false)] [hashtable]$Context
     )
 
     $candidates = @()
@@ -22,12 +22,12 @@
             if ($match) {
                 $newLine = ($line.Trim() -replace [regex]::Escape($filename), [System.IO.Path]::GetFileName($match.Name))
                 $candidates += [PSCustomObject]@{
-                    Type = 'Fix'
-                    OldLine = $line
-                    NewLine = $newLine
+                    Type       = 'Fix'
+                    OldLine    = $line
+                    NewLine    = $newLine
                     Confidence = 1.0
-                    Heuristic = 'ExactNameMatch'
-                    Reason = "File found by exact filename: $($match.Name)"
+                    Heuristic  = 'ExactNameMatch'
+                    Reason     = "File found by exact filename: $($match.Name)"
                 }
             }
         }
@@ -35,6 +35,7 @@
 
     return $candidates
 }
+
 
 
 

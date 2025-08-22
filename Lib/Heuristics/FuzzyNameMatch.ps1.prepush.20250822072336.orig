@@ -1,10 +1,10 @@
-﻿function Invoke-Heuristic-FuzzyNameMatch {
+function Invoke-Heuristic-FuzzyNameMatch {
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory=$true)][string]$CueFilePath,
-        [Parameter(Mandatory=$true)][string[]]$CueLines,
-        [Parameter(Mandatory=$true)][System.IO.FileInfo[]]$CueFolderFiles,
-    [Parameter(Mandatory=$false)][hashtable]$Context
+        [Parameter(Mandatory = $true)][string]$CueFilePath,
+        [Parameter(Mandatory = $true)][string[]]$CueLines,
+        [Parameter(Mandatory = $true)][System.IO.FileInfo[]]$CueFolderFiles,
+        [Parameter(Mandatory = $false)][hashtable]$Context
     )
 
     # Conservative fuzzy matcher: tokenizes names and uses Levenshtein distance on base names.
@@ -51,19 +51,19 @@
     $null = $CueFilePath
     $ctx = @{}
     if ($null -ne $Context) { $ctx = $Context.Clone() }
-    $validExts = if ($ctx.validAudioExts) { $ctx.validAudioExts } else { @('.flac','.mp3','.wav','.ape') }
+    $validExts = if ($ctx.validAudioExts) { $ctx.validAudioExts } else { @('.flac', '.mp3', '.wav', '.ape') }
 
     $candidates = @()
 
     foreach ($line in $CueLines) {
         if ($line -match 'FILE\s+"(?<name>[^"]+)"') {
             $token = $Matches['name']
-            $tokenBase = [string]([System.IO.Path]::GetFileNameWithoutExtension($token) -replace '[^A-Za-z0-9]','')
+            $tokenBase = [string]([System.IO.Path]::GetFileNameWithoutExtension($token) -replace '[^A-Za-z0-9]', '')
 
             # Compare against files in folder filtered by valid extensions
             $pool = $CueFolderFiles | Where-Object { $validExts -contains ($_.Extension.ToLower()) }
             foreach ($f in $pool) {
-                $candidateBase = [string]([System.IO.Path]::GetFileNameWithoutExtension($f.Name) -replace '[^A-Za-z0-9]','')
+                $candidateBase = [string]([System.IO.Path]::GetFileNameWithoutExtension($f.Name) -replace '[^A-Za-z0-9]', '')
                 if ([string]::IsNullOrEmpty($candidateBase) -or [string]::IsNullOrEmpty($tokenBase)) { continue }
                 $tokenLen = [int][string]::IsNullOrEmpty($tokenBase) ? 0 : $tokenBase.Length
                 $candLen = [int][string]::IsNullOrEmpty($candidateBase) ? 0 : $candidateBase.Length
@@ -77,18 +77,19 @@
                     # Confidence scaled between 0.5 and 0.9 based on norm
                     $confidence = 0.5 + ([Math]::Round((($norm - 0.75) / 0.25) * 0.4, 2))
                     $candidates += [pscustomobject]@{
-                        Heuristic = 'FuzzyNameMatch'
-                        Candidate = $f.Name
+                        Heuristic  = 'FuzzyNameMatch'
+                        Candidate  = $f.Name
                         Confidence = [Math]::Min($confidence, 0.95)
-                        Reason = "Fuzzy match between '$token' and '$($f.Name)' (similarity=$([Math]::Round($norm,2)))"
+                        Reason     = "Fuzzy match between '$token' and '$($f.Name)' (similarity=$([Math]::Round($norm,2)))"
                     }
                 }
             }
         }
     }
 
-    return $candidates | Sort-Object -Property @{Expression={$_.Confidence};Descending=$true}
+    return $candidates | Sort-Object -Property @{Expression = { $_.Confidence }; Descending = $true }
 }
+
 
 
 

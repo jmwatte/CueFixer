@@ -1,7 +1,7 @@
-﻿function Invoke-ApplyFixImpl {
+function Invoke-ApplyFixImpl {
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory=$true)] [object]$Results,
+        [Parameter(Mandatory = $true)] [object]$Results,
         [switch]$DryRun
     )
     # Accept a single object or a collection; normalize to an array for internal processing.
@@ -76,7 +76,7 @@
 function Invoke-ApplyFix {
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory=$true)] [object]$Results,
+        [Parameter(Mandatory = $true)] [object]$Results,
         [switch]$DryRun
     )
     # Normalize single object or collection to an array for downstream impl.
@@ -86,6 +86,7 @@ function Invoke-ApplyFix {
 }
 
 # (implementation is defined above as the canonical singular impl)
+
 
 
 

@@ -1,10 +1,10 @@
-﻿function Invoke-Heuristic-PreferredExtension {
+function Invoke-Heuristic-PreferredExtension {
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory=$true)][string]$CueFilePath,
-        [Parameter(Mandatory=$true)][string[]]$CueLines,
-        [Parameter(Mandatory=$true)][System.IO.FileInfo[]]$CueFolderFiles,
-    [Parameter(Mandatory=$false)][hashtable]$Context
+        [Parameter(Mandatory = $true)][string]$CueFilePath,
+        [Parameter(Mandatory = $true)][string[]]$CueLines,
+        [Parameter(Mandatory = $true)][System.IO.FileInfo[]]$CueFolderFiles,
+        [Parameter(Mandatory = $false)][hashtable]$Context
     )
 
     # Contract: return an array of candidate objects: @{ Heuristic=..; Candidate=..; Confidence=..; Reason=.. }
@@ -32,7 +32,7 @@
 
             if ([string]::IsNullOrEmpty($ext)) {
                 # find files in folder matching base name with any audio extensions
-                    $fileMatches = $CueFolderFiles | Where-Object { [System.IO.Path]::GetFileNameWithoutExtension($_.Name) -eq $base }
+                $fileMatches = $CueFolderFiles | Where-Object { [System.IO.Path]::GetFileNameWithoutExtension($_.Name) -eq $base }
                 if ($fileMatches.Count -gt 0) {
                     # order by preferredOrder index
                     $ordered = $fileMatches | Sort-Object { $preferredOrder.IndexOf( ('.' + ($_.Extension.TrimStart('.').ToLower())) ) }
@@ -42,10 +42,10 @@
                     $confidence = if ($fileMatches.Count -eq 1) { 0.95 } else { 0.5 }
                     $candidatePath = $top.Name
                     $candidates += [pscustomobject]@{
-                        Heuristic = 'PreferredExtension'
-                        Candidate = $candidatePath
+                        Heuristic  = 'PreferredExtension'
+                        Candidate  = $candidatePath
                         Confidence = $confidence
-                        Reason = "Preferred extension chosen from available candidates: $(( $fileMatches | ForEach-Object { $_.Name } ) -join ', ')"
+                        Reason     = "Preferred extension chosen from available candidates: $(( $fileMatches | ForEach-Object { $_.Name } ) -join ', ')"
                     }
                 }
             }
@@ -54,6 +54,7 @@
 
     return $candidates
 }
+
 
 
 

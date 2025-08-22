@@ -6,8 +6,8 @@ $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 $modulePath = Join-Path $repoRoot 'CueFixer.psm1'
 
 if (-not (Test-Path $modulePath)) {
-	Write-Error "Module not found at path: $modulePath"
-	exit 1
+    Write-Error "Module not found at path: $modulePath"
+    exit 1
 }
 
 Import-Module $modulePath -Force -Verbose
@@ -23,3 +23,4 @@ Write-Host "Running Repair-CueFile in DryRun mode..." -ForegroundColor Cyan
 $audits | Repair-CueFile -DryRun -Verbose
 
 Write-Host "Demo complete." -ForegroundColor Green
+
