@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
 Normalize structural elements of a .cue file (FILE/TRACK/INDEX) and return fixed text.
 
@@ -144,3 +144,9 @@ function Set-CueFileStructure {
     )
     Set-CueFileStructureImpl -CueFilePath $CueFilePath -WriteChanges:$WriteChanges
 }
+
+
+
+
+
+

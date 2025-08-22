@@ -1,4 +1,4 @@
-param (
+﻿param (
 	[string]$RootFolder,
 	[switch]$Recurse,
 	[switch]$AuditOnly,
@@ -118,8 +118,8 @@ function Fix-CueFileStructure {
 	if ($originalText -ne $fixedText) {
 		Copy-Item -LiteralPath $CueFilePath -Destination "$CueFilePath.bak" -Force
 		Set-Content -LiteralPath $CueFilePath -Value $fixedText -Encoding UTF8 -Force
-        
-		
+
+
 		Write-Host "✅ Cue file structure fixed and saved to: $CueFilePath" -ForegroundColor Green
 		return $true
 	}
@@ -475,3 +475,8 @@ if ($InteractiveFix) {
 	Invoke-InteractiveFix -cueFiles $cueFiles
 	return
 }
+
+
+
+
+

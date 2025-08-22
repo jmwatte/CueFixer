@@ -1,0 +1,52 @@
+﻿function Get-CueContentFixImpl {
+    <#
+    .SYNOPSIS
+    Build fixed cue content from updated lines and report whether changes exist.
+
+    .DESCRIPTION
+    `Get-CueContentFix` accepts a path and an array of proposed updated lines (for
+    example the `UpdatedLines` produced by the analyzer). It builds a CRLF-joined
+    string, compares it to the file on disk (preserving CRLF), and returns a hashtable
+    with `Changed` and `FixedText` keys. This function is pure (does not write files).
+
+    .PARAMETER CueFilePath
+    Path to the original .cue file (used to read the original text for comparison).
+
+    .PARAMETER UpdatedLines
+    The array of lines representing the proposed content of the .cue file.
+    #>
+    param(
+        [Parameter(Mandatory=$true)] [string]$CueFilePath,
+        [Parameter(Mandatory=$true)] [System.Collections.IEnumerable]$UpdatedLines
+    )
+
+    if (-not (Test-Path -LiteralPath $CueFilePath)) { Throw "Path not found: $CueFilePath" }
+
+    $originalLines = Get-Content -LiteralPath $CueFilePath -Encoding UTF8
+    $originalText = $originalLines -join "`r`n"
+
+    # Ensure the updated lines are a flat array of strings and join with CRLF
+    $fixedLines = @()
+    foreach ($l in $UpdatedLines) { $fixedLines += [string]$l }
+    $fixedText = $fixedLines -join "`r`n"
+
+    if ($originalText -ne $fixedText) {
+        return [PSCustomObject]@{ Changed = $true; FixedText = $fixedText }
+    }
+    else {
+        return [PSCustomObject]@{ Changed = $false; FixedText = $originalText }
+    }
+}
+
+# Public wrapper for compatibility
+function Get-CueContentFix {
+    param(
+        [Parameter(Mandatory=$true)] [string]$CueFilePath,
+        [Parameter(Mandatory=$true)] [System.Collections.IEnumerable]$UpdatedLines
+    )
+    Get-CueContentFixImpl -CueFilePath $CueFilePath -UpdatedLines $UpdatedLines
+}
+
+
+
+

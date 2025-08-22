@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
 Print a short summary (counts) of cue audit results.
 
@@ -27,6 +27,12 @@ function Show-AuditSummary {
         Write-Verbose "🛑 Manual Fix Needed: $($summary.Unfixable)"
     }
 }
+
+
+
+
+
+
 
 
 
