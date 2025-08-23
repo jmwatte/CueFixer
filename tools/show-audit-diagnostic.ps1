@@ -108,7 +108,7 @@ end {
         }
 
         if ($ShowFileContent) {
-            $cuePath = $item.Path
+            $cuePath = [System.Management.Automation.WildcardPattern]::Escape($item.Path)
             if (Test-Path $cuePath) {
                 Write-Host "\nFile content preview (first $MaxFileLines lines):" -ForegroundColor Cyan
                 Get-Content -Path $cuePath -TotalCount $MaxFileLines | ForEach-Object { Write-Host "  $_" }

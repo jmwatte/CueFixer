@@ -56,6 +56,73 @@ Two small helper scripts live in the `tools\` folder to make triage easier witho
 	```
 
 Commit note suggestion: these helpers were added on branch `chore/remove-ci-workflows` as convenience viewers for audit output.
+### Quick one-liners — inspect fixable items
+
+If you saved a CLIXML audit (recommended) you can run quick PowerShell one-liners to triage without opening the interactive tools.
+
+- List only the paths of all Fixable items:
+```powershell
+Import-Clixml 'C:\Temp\cue-audit-d-drive.clixml' |
+  Where-Object { $_.Status -ieq 'Fixable' } |
+  Select-Object -ExpandProperty Path
+
+#Print a human-friendly per-file fixes summary (path + each fixs description and OLD/NEW text):
+
+  Import-Clixml 'C:\Temp\cue-audit-d-drive.clixml' |
+  Where-Object { $_.Status -ieq 'Fixable' } |
+  ForEach-Object {
+    $p = $_.Path
+    Write-Output "Path: $p"
+    if ($_.Fixes) {
+      $_.Fixes | ForEach-Object {
+        Write-Output "  - $($_.Description)"
+        if ($_.Old) { Write-Output "      OLD: $($_.Old)" }
+        if ($_.New) { Write-Output "      NEW: $($_.New)" }
+      }
+    } else {
+      Write-Output "  (no Fixes)"
+    }
+    Write-Output ""
+  }
+
+#Emit every proposed fix as structured objects (one row per fix) — good for Format-Table, Export-Csv, or ConvertTo-Json
+  Import-Clixml 'C:\Temp\cue-audit-d-drive.clixml' |
+  Where-Object { $_.Status -ieq 'Fixable' } |
+  ForEach-Object {
+    $path = $_.Path
+    if ($_.Fixes) {
+      $_.Fixes | ForEach-Object {
+        [PSCustomObject]@{
+          Path        = $path
+          Description = $_.Description
+          Lines       = ($_.Lines -join ',')
+          Old         = $_.Old
+          New         = $_.New
+        }
+      }
+    }
+  } | Format-Table -AutoSize
+
+#Export all proposed fixes to CSV for offline review:
+
+Import-Clixml 'C:\Temp\cue-audit-d-drive.clixml' |
+  Where-Object { $_.Status -ieq 'Fixable' } |
+  ForEach-Object {
+    $path = $_.Path
+    if ($_.Fixes) {
+      $_.Fixes | ForEach-Object {
+        [PSCustomObject]@{
+          Path        = $path
+          Description = $_.Description
+          Lines       = ($_.Lines -join ',')
+          Old         = $_.Old
+          New         = $_.New
+        }
+      }
+    }
+  } | Export-Csv 'C:\Temp\cue-fixes.csv' -NoTypeInformation
+
+
 
 4) If you only have the CSV and want counts or lists:
 
