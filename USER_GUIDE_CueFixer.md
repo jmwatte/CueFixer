@@ -7,9 +7,6 @@ This short manual shows how a person with an audio library can check and clean u
 
 For large audits (hundreds of files) run the audit once and save the full results so you can triage without re-scanning your drive.
 
-- Preferred (preserves nested objects and proposed fixes): CLIXML via `Export-Clixml` / `Import-Clixml`.
-- Quick, flat report: CSV (good for counts and lists but it flattens nested `.Fixes`).
-- Interchange: JSON via `ConvertTo-Json` / `ConvertFrom-Json` (use sufficient `-Depth` to preserve nested data).
 
 Commands (copy/paste):
 
@@ -39,6 +36,26 @@ $results | Show-Fixable -DryRun -Verbose
 # Manual/unfixable items
 $results | Show-Unfixable -Verbose
 ```
+
+### Quick viewers (tools/)
+
+Two small helper scripts live in the `tools\` folder to make triage easier without re-scanning your drive:
+
+- `tools\show-audit-summary.ps1` — prints grouped counts (Clean/Fixable/Unfixable), percentages, and optional samples per status.
+	- Example (from saved CLIXML):
+
+	```powershell
+	Import-Clixml 'C:\Temp\cue-audit-d-drive.clixml' | .\tools\show-audit-summary.ps1 -ShowSamples -Sample 8
+	```
+
+- `tools\show-audit-diagnostic.ps1` — shows a detailed diagnostic for a single audit item (by Path or the first item of a given Status). Supports showing proposed Fixes and a preview of the cue file content.
+	- Example: show the first Fixable item's diagnostic and include proposed fixes and a file preview:
+
+	```powershell
+	Import-Clixml 'C:\Temp\cue-audit-d-drive.clixml' | .\tools\show-audit-diagnostic.ps1 -FirstStatus Fixable -ShowFixes -ShowFileContent
+	```
+
+Commit note suggestion: these helpers were added on branch `chore/remove-ci-workflows` as convenience viewers for audit output.
 
 4) If you only have the CSV and want counts or lists:
 
