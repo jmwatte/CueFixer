@@ -1,6 +1,5 @@
 # CueFixer — Modularization What‑If
 
-[![CI](https://github.com/jmwatte/CueFixer/actions/workflows/pester.yml/badge.svg?branch=main)](https://github.com/jmwatte/CueFixer/actions/workflows/pester.yml)
 
 <!-- Replace <OWNER>/<REPO> above with your GitHub repository path to activate the badge -->
 
