@@ -68,7 +68,7 @@ $libDir = Join-Path $PSScriptRoot 'Lib'
 if (Test-Path $libDir) {
     $config = Join-Path $libDir 'ModuleConfig.ps1'
     if (Test-Path $config) { . $config }
-    Get-ChildItem -Path $libDir -Filter *.ps1 -File | Where-Object { $_.Name -ne 'ModuleConfig.ps1' } | ForEach-Object { . $_.FullName }
+    Get-ChildItem -Path $libDir -Filter *.ps1 -File -Recurse | Where-Object { $_.Name -ne 'ModuleConfig.ps1' } | ForEach-Object { . $_.FullName }
 }
 
 # Dot-source public wrappers
@@ -76,11 +76,15 @@ $publicDir = Join-Path $PSScriptRoot 'Public'
 if (Test-Path $publicDir) {
     Get-ChildItem -Path $publicDir -Filter *.ps1 -File | ForEach-Object { . $_.FullName }
 }
-
+# --- Add IO helpers so functions like Save-FileWithBackup are available ---
+$ioDir = Join-Path $PSScriptRoot 'IO'
+if (Test-Path $ioDir) {
+    Get-ChildItem -Path $ioDir -Filter *.ps1 -File | ForEach-Object { . $_.FullName }
+}
 # Export a minimal, stable public surface
 Export-ModuleMember -Function @(
     'Get-CueAudit', 'Get-CueAuditCore', 'Get-CueContentFix', 'Apply-Fixes', 'Set-CueFileStructure', 'Repair-CueFile', 'Invoke-InteractiveFix',
-    'Open-InEditor', 'Show-Fixables', 'Show-Unfixables', 'Show-AuditSummary'
+    'Open-InEditor', 'Show-Fixable', 'Show-Unfixable', 'Show-AuditSummary',"Invoke-HeuristicFuzzyNameMatch"
 )
 
 

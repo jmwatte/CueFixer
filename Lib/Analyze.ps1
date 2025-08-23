@@ -1,4 +1,40 @@
-﻿<#
+﻿
+# Helper: normalize a filename for comparison (strip punctuation, collapse whitespace)
+function Normalize-NameForCompare {
+    param([string]$s)
+    if (-not $s) { return '' }
+    $out = $s.ToLower().Trim()
+    # replace common punctuation with spaces, collapse whitespace
+    $out = $out -replace '[\.\-_,]+', ' '
+    $out = $out -replace '\s+', ' '
+    return $out
+}
+
+# Token-based Jaccard similarity — robust to reordering of tokens (e.g. "the duck" vs "duck the")
+function Token-Similarity {
+    param([string]$a, [string]$b)
+
+    if (-not $a -and -not $b) { return 1.0 }
+    if (-not $a -or -not $b) { return 0.0 }
+
+    # remove leading numeric track numbers like "07" which are noisy
+    $cleanA = ($a -replace '^\s*\d+\s+', '')
+    $cleanB = ($b -replace '^\s*\d+\s+', '')
+
+    $tokensA = ($cleanA -split '\s+') | Where-Object { $_ -ne '' } | ForEach-Object { $_.ToLower() } | Select-Object -Unique
+    $tokensB = ($cleanB -split '\s+') | Where-Object { $_ -ne '' } | ForEach-Object { $_.ToLower() } | Select-Object -Unique
+
+    $inter = ($tokensA | Where-Object { $tokensB -contains $_ }).Count
+    $union = ($tokensA + $tokensB | Select-Object -Unique).Count
+    if ($union -eq 0) { return 0.0 }
+    return [double]$inter / $union
+}
+
+
+
+
+
+<#
 .SYNOPSIS
 Perform a detailed audit of a single .cue file and produce structured analysis.
 
@@ -20,9 +56,29 @@ Get-CueAuditCore -CueFilePath 'C:\Music\Album\album.cue'
 #>
 function Get-CueAuditCoreImpl {
     param ([string]$CueFilePath)
-
+# Ensure we have a validAudioExts array available in this function.
+# Prefer the module-configured $script:validAudioExts (set by Lib/ModuleConfig.ps1),
+# then any script/global validAudioExts variable, then fall back to a sensible default.
+if (-not $validAudioExts -or $validAudioExts.Count -eq 0) {
+    if ($script:validAudioExts -and ($script:validAudioExts.Count -gt 0)) {
+        $validAudioExts = $script:validAudioExts
+    }
+    elseif ((Get-Variable -Name 'validAudioExts' -Scope Script -ErrorAction SilentlyContinue) -and (Get-Variable -Name 'validAudioExts' -Scope Script -ErrorAction SilentlyContinue).Value) {
+        $validAudioExts = (Get-Variable -Name 'validAudioExts' -Scope Script -ErrorAction SilentlyContinue).Value
+    }
+    elseif ((Get-Variable -Name 'validAudioExts' -Scope Global -ErrorAction SilentlyContinue) -and (Get-Variable -Name 'validAudioExts' -Scope Global -ErrorAction SilentlyContinue).Value) {
+        $validAudioExts = (Get-Variable -Name 'validAudioExts' -Scope Global -ErrorAction SilentlyContinue).Value
+    }
+    else {
+        # Default audio extensions (lowercase, include leading dot)
+        $validAudioExts = @('.flac', '.mp3', '.wav', '.aac', '.ogg', '.m4a', '.aiff', '.ape')
+    }
+}
     # Keep behavior compatible with original script but live in Lib/ for testability
     $cueFolder = Split-Path $CueFilePath
+    # Cache folder listing once for performance and consistent lookups
+    $cueFolderFiles = Get-ChildItem -LiteralPath $cueFolder -File -ErrorAction SilentlyContinue
+
     $cueLines = Get-Content -LiteralPath $CueFilePath
     $updatedLines = @()
     $changesMade = $false
@@ -89,15 +145,16 @@ function Get-CueAuditCoreImpl {
                 }
             }
 
-            $actualFile = Get-ChildItem -LiteralPath $cueFolder -File | Where-Object {
+            # Try exact/basename match first (use cached listing)
+            $actualFile = $cueFolderFiles | Where-Object {
                 ($_.Name -ieq $filename -or $_.BaseName -ieq $baseName) -and ($validAudioExts -contains $_.Extension.ToLower())
             } | Select-Object -First 1
 
             if ($actualFile) {
                 if ($validAudioExts -contains $actualFile.Extension.ToLower()) {
                     $correctedLine = "FILE `"$($actualFile.Name)`" $type"
-                    $normalizedOld = ($line.Trim().ToLower() -replace '\\s+', ' ')
-                    $normalizedNew = ($correctedLine.Trim().ToLower() -replace '\\s+', ' ')
+                    $normalizedOld = ($line.Trim().ToLower() -replace '\s+', ' ')
+                    $normalizedNew = ($correctedLine.Trim().ToLower() -replace '\s+', ' ')
                     if ($normalizedOld -ne $normalizedNew) {
                         $fixes += [PSCustomObject]@{ Old = $line; New = $correctedLine }
                         $updatedLines += $correctedLine
@@ -106,7 +163,8 @@ function Get-CueAuditCoreImpl {
                     }
                 }
                 else {
-                    $fallbackFile = Get-ChildItem -LiteralPath $cueFolder -File | Where-Object {
+                    # existing fallback logic preserved
+                    $fallbackFile = $cueFolderFiles | Where-Object {
                         $_.BaseName -ieq $baseName -and ($validAudioExts -contains $_.Extension.ToLower())
                     } | Select-Object -First 1
 
@@ -123,7 +181,68 @@ function Get-CueAuditCoreImpl {
                 }
             }
             else {
-                $unfixable = $true
+               
+                # No exact match — attempt fuzzy matching (token-Jaccard + optional Levenshtein)
+                try {
+                    # Lazy-load heuristics file if Levenshtein isn't already available
+                    if (-not (Get-Command -Name Get-LevenshteinDistance -CommandType Function -ErrorAction SilentlyContinue)) {
+                        $heurPath = Join-Path $PSScriptRoot 'Heuristics\FuzzyNameMatch.ps1'
+                        if (Test-Path $heurPath) { . $heurPath }   # dot-source into this runspace
+                    }
+                } catch {
+                    Write-Verbose "Could not load fuzzy heuristics: $($_.Exception.Message)"
+                }
+                
+                $bestCandidate = $null
+                $bestScore = 0.0
+                
+                # Use cached $cueFolderFiles (set near top of function)
+                $tokenToCompare = Normalize-NameForCompare -s $baseName
+                
+                foreach ($candidate in $cueFolderFiles) {
+                    # defensive extension handling (Extension may be $null)
+                    $candExt = ([string]$candidate.Extension).ToLower().Trim()
+                    if (-not ($validAudioExts -contains $candExt)) { continue }
+                
+                    $candidateBase = [System.IO.Path]::GetFileNameWithoutExtension($candidate.Name)
+                    $candidateToken = Normalize-NameForCompare -s $candidateBase
+                
+                    # token-based Jaccard similarity (robust to token re-ordering)
+                    $tokenSim = Token-Similarity -a $tokenToCompare -b $candidateToken
+                
+                    # normalized Levenshtein similarity (0..1) if available
+                    $levSim = 0.0
+                    if (Get-Command -Name Get-LevenshteinDistance -CommandType Function -ErrorAction SilentlyContinue) {
+                        try {
+                            $dist = Get-LevenshteinDistance -s $tokenToCompare -t $candidateToken
+                            $maxLen = [Math]::Max(($tokenToCompare).Length, ($candidateToken).Length)
+                            if ($maxLen -gt 0) { $levSim = 1.0 - ($dist / $maxLen) }
+                        } catch {
+                            Write-Verbose "Levenshtein failed for tokens: $($_.Exception.Message)"
+                        }
+                    }
+                
+                    # Combine measures: take the maximum so reorder-insensitive matches can win
+                    $norm = [Math]::Max($tokenSim, $levSim)
+                
+                    if ($norm -gt $bestScore) {
+                        $bestScore = $norm
+                        $bestCandidate = $candidate
+                    }
+                }
+                
+                # Conservative threshold (same as heuristics tests)
+                if ($bestCandidate -and ($bestScore -ge 0.75)) {
+                    $correctedLine = "FILE `"$($bestCandidate.Name)`" $type"
+                    $fixes += [PSCustomObject]@{ Old = $line; New = $correctedLine }
+                    $updatedLines += $correctedLine
+                    $changesMade = $true
+                    continue
+                }
+                else {
+                    $unfixable = $true
+                }
+                
             }
         }
 

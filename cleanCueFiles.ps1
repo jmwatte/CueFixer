@@ -15,7 +15,9 @@ $cueStatus = @()
 
 
 
-$preferredEditor = "hx"  # Change to "notepad", "code", etc.
+## Preferred editor: can be overridden by environment variable CUEFIXER_EDITOR
+$preferredEditor = $env:CUEFIXER_EDITOR
+if (-not $preferredEditor) { $preferredEditor = 'hx' }  # Change default to your preferred editor (e.g. 'code', 'notepad')
 <#
 .SYNOPSIS
 Open a file in the user's preferred editor.
@@ -31,18 +33,55 @@ Path to the file to open.
 .EXAMPLE
 Open-InEditor 'C:\Music\Album\album.cue'
 #>
-function Open-InEditor($filePath) {
-	switch ($preferredEditor) {
-		"hx" { & hx $filePath }
-		"notepad" { notepad $filePath }
-		"code" { code $filePath }
-		default { Start-Process $filePath }
+function Open-InEditor {
+	[CmdletBinding()]
+	param(
+		[Parameter(Mandatory = $true, Position = 0)]
+		[string]$filePath
+	)
+
+	# Determine editor: env override wins
+	$editor = $env:CUEFIXER_EDITOR
+	if (-not $editor) { $editor = $preferredEditor }
+
+	Write-Verbose ([string]::Format('Opening file {0} with editor: {1}', $filePath, $editor))
+
+	if ([string]::IsNullOrWhiteSpace($editor)) {
+		# No editor configured; open by file association
+		try { Start-Process -FilePath $filePath -ErrorAction Stop } catch { Write-Verbose "Failed to open file: $($_.Exception.Message)" }
+		return
 	}
+
+	# Prefer launching the named editor if it's resolvable on PATH
+	$cmd = Get-Command -Name $editor -ErrorAction SilentlyContinue
+	if ($null -ne $cmd) {
+		try {
+			$exe = $cmd.Path
+			if ([string]::IsNullOrWhiteSpace($exe)) { $exe = $editor }
+			Start-Process -FilePath $exe -ArgumentList $filePath -ErrorAction Stop
+			return
+		}
+		catch {
+			Write-Verbose ([string]::Format('Failed to launch editor {0}: {1}', $editor, $_.Exception.Message))
+		}
+	}
+
+	# Try starting the editor directly (maybe it's a full path)
+	try {
+		Start-Process -FilePath $editor -ArgumentList $filePath -ErrorAction Stop
+		return
+	}
+	catch {
+		Write-Verbose ([string]::Format('Could not start configured editor {0}: {1}', $editor, $_.Exception.Message))
+	}
+
+	# Fallback: open by file association
+	try { Start-Process -FilePath $filePath -ErrorAction Stop } catch { Write-Verbose "Final fallback failed: $($_.Exception.Message)" }
 }
 function Fix-CueFileStructure {
 	param ([string]$CueFilePath)
 
-	$lines = Get-Content -LiteralPath $CueFilePath
+	$lines = @(Get-Content -LiteralPath $CueFilePath)
 	$reFile = '^\s*FILE\s+"(.+?)"\s+\w+'
 	$reTrack = '^\s*TRACK\s+([0-9]+)\s+\w+'
 	$reIndex0 = '^\s*INDEX\s+00\s+'
@@ -131,6 +170,15 @@ function Fix-CueFileStructure {
 function Invoke-InteractiveFix {
 	param ([System.Collections.ArrayList]$cueFiles)
 
+	# Tracing (write JSON events when CUEFIXER_TRACE=1)
+	$traceEnabled = $false
+	if ($env:CUEFIXER_TRACE -eq '1') {
+		$traceEnabled = $true
+		$logPath = Join-Path $env:TEMP 'cuefixer-interactive-log.json'
+		if (Test-Path $logPath) { Remove-Item -LiteralPath $logPath -Force -ErrorAction SilentlyContinue }
+		function Log-Event { param($obj) if ($traceEnabled) { $obj | ConvertTo-Json -Depth 6 | Add-Content -LiteralPath $logPath } }
+	}
+
 	$groupedByFolder = $cueFiles | Group-Object { $_.DirectoryName }
 
 	foreach ($group in $groupedByFolder) {
@@ -142,7 +190,7 @@ function Invoke-InteractiveFix {
 		Write-Host "Found $($filesInFolder.Count) .cue file(s):"
 		$filesInFolder | ForEach-Object { Write-Host "  - $($_.Name)" }
 
-		# Analyze all files in folder
+	# Analyze all files in folder
 		$results = @()
 		foreach ($cue in $filesInFolder) {
 			$result = Analyze-CueFile -CueFilePath $cue.FullName
@@ -155,33 +203,44 @@ function Invoke-InteractiveFix {
 			continue
 		}
 
-		do {
-			Write-Host "`n🧪 Previewing changes (DryRun)..."
-			Show-Fixables -results $results
-			Show-Unfixables -results $results
+			do {
+				Write-Host "`n🧪 Previewing changes (DryRun)..."
+				Show-Fixables -results $results
+				Show-Unfixables -results $results
 
-			$choice = Read-Host "`nApply changes? [A] Apply  [S] Skip  [E] Edit  [P] Play  [Q] Quit  [R] Retry (Enter = Skip)"
+				if ($traceEnabled) { Log-Event @{ Event='Preview'; Folder=$folderPath; ResultsCount=($results.Count) } }
+
+				# Support non-interactive tests via CUEFIXER_TEST_CHOICE environment variable
+				if ($env:CUEFIXER_TEST_CHOICE) {
+					$choice = $env:CUEFIXER_TEST_CHOICE
+				} else {
+					$choice = Read-Host "`nApply changes? [A] Apply  [S] Skip  [E] Edit  [P] Play  [Q] Quit  [R] Retry (Enter = Skip)"
+				}
+				if ($traceEnabled) { Log-Event @{ Event='Prompt'; Folder=$folderPath; Choice=$choice } }
 
 			switch ($choice.ToUpper()) {
 				'' { Write-Host "⏭️ Skipping folder..." -ForegroundColor DarkGray; $retry = $false }
 				'S' { Write-Host "⏭️ Skipping folder..." -ForegroundColor DarkGray; $retry = $false }
 				'A' {
+					if ($traceEnabled) { Log-Event @{ Event='Branch'; Folder=$folderPath; Action='Apply' } }
 					Apply-Fixes -results $results
 					$retry = $false
 				}
 				'E' {
+					if ($traceEnabled) { Log-Event @{ Event='Branch'; Folder=$folderPath; Action='Edit'; File=$filesInFolder[0].FullName } }
 					Write-Host "📝 Opening first cue file in default editor..." -ForegroundColor Yellow
 					Open-InEditor $filesInFolder[0].FullName
 					$retry = $true
 				}
 				#P lets you play the cuefile
 				'P' {
+					if ($traceEnabled) { Log-Event @{ Event='Branch'; Folder=$folderPath; Action='Play'; File=$filesInFolder[0].FullName } }
 					Write-Host "🎵 Playing first cue file..." -ForegroundColor Yellow
 					Start-Process $filesInFolder[0].FullName
 					$retry = $true
 				}
 				'Q' { Write-Host "👋 Quitting script." -ForegroundColor Magenta; exit }
-				'R' { Write-Host "🔁 Retrying analysis..." -ForegroundColor Cyan; $retry = $true }
+				'R' { if ($traceEnabled) { Log-Event @{ Event='Branch'; Folder=$folderPath; Action='Retry' } } ; Write-Host "🔁 Retrying analysis..." -ForegroundColor Cyan; $retry = $true }
 				default { Write-Host "❓ Invalid choice. Please try again..." -ForegroundColor Red; $retry = $true }
 			}
 		} while ($retry)
@@ -204,7 +263,8 @@ function Analyze-CueFile {
 	$hadFile = $false
 	$inTrack = $false
 	for ($i = 0; $i -lt $cueLines.Count; $i++) {
-		$line = $cueLines[$i].Trim()
+		$line = [string]$cueLines[$i]
+		$line = $line.Trim()
 		if ($line -match '^\s*FILE\s+"(.+?)"\s+\w+\s*$') {
 			$hadFile = $true
 			$inTrack = $false
@@ -233,6 +293,10 @@ function Analyze-CueFile {
 
 	# Per-line content checks (missing audio files are considered truly unfixable)
 	foreach ($line in $cueLines) {
+		# Ensure we operate on a string (Get-Content can sometimes return a single
+		# string which enumerates as characters; cast defensively to avoid
+		# calling string methods on System.Char values).
+		$line = [string]$line
 		if ($line -match 'FILE\s+"(.+?)"\s+(WAVE|MP3|FLAC)') {
 			$filename = $matches[1]
 			$type = $matches[2]

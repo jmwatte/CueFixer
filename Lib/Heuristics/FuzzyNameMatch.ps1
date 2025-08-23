@@ -1,4 +1,39 @@
-﻿function Invoke-Heuristic-FuzzyNameMatch {
+﻿function Get-LevenshteinDistance {
+    param([string]$s, [string]$t)
+    $s = [string]$s; $t = [string]$t
+    if ($s -eq $t) { return 0 }
+    if ([string]::IsNullOrEmpty($s)) { return $t.Length }
+    if ([string]::IsNullOrEmpty($t)) { return $s.Length }
+
+    $m = $s.Length
+    $n = $t.Length
+
+    # Use two-row DP to avoid multi-dimensional arrays and ensure integer math
+    $prev = New-Object 'int[]' ($n + 1)
+    $curr = New-Object 'int[]' ($n + 1)
+
+    for ($j = 0; $j -le $n; $j++) { $prev[$j] = [int]$j }
+
+    for ($i = 1; $i -le $m; $i++) {
+        $curr[0] = [int]$i
+        $si = $s.Substring($i - 1, 1)
+        for ($j = 1; $j -le $n; $j++) {
+            $tj = $t.Substring($j - 1, 1)
+            $cost = if ($si -eq $tj) { 0 } else { 1 }
+            $del = [int]$prev[$j] + 1
+            $ins = [int]$curr[$j - 1] + 1
+            $sub = [int]$prev[$j - 1] + $cost
+            if ($del -lt $ins) { $curr[$j] = if ($del -lt $sub) { $del } else { $sub } }
+            else { $curr[$j] = if ($ins -lt $sub) { $ins } else { $sub } }
+        }
+        # swap prev and curr arrays
+        $temp = $prev; $prev = $curr; $curr = $temp
+    }
+
+    return [int]$prev[$n]
+}
+
+function Invoke-HeuristicFuzzyNameMatch {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory=$true)][string]$CueFilePath,
@@ -9,41 +44,6 @@
 
     # Conservative fuzzy matcher: tokenizes names and uses Levenshtein distance on base names.
     # Returns PSCustomObject candidates: @{ Heuristic, Candidate, Confidence, Reason }
-
-    function Get-LevenshteinDistance {
-        param([string]$s, [string]$t)
-        $s = [string]$s; $t = [string]$t
-        if ($s -eq $t) { return 0 }
-        if ([string]::IsNullOrEmpty($s)) { return $t.Length }
-        if ([string]::IsNullOrEmpty($t)) { return $s.Length }
-
-        $m = $s.Length
-        $n = $t.Length
-
-        # Use two-row DP to avoid multi-dimensional arrays and ensure integer math
-        $prev = New-Object 'int[]' ($n + 1)
-        $curr = New-Object 'int[]' ($n + 1)
-
-        for ($j = 0; $j -le $n; $j++) { $prev[$j] = [int]$j }
-
-        for ($i = 1; $i -le $m; $i++) {
-            $curr[0] = [int]$i
-            $si = $s.Substring($i - 1, 1)
-            for ($j = 1; $j -le $n; $j++) {
-                $tj = $t.Substring($j - 1, 1)
-                $cost = if ($si -eq $tj) { 0 } else { 1 }
-                $del = [int]$prev[$j] + 1
-                $ins = [int]$curr[$j - 1] + 1
-                $sub = [int]$prev[$j - 1] + $cost
-                if ($del -lt $ins) { $curr[$j] = if ($del -lt $sub) { $del } else { $sub } }
-                else { $curr[$j] = if ($ins -lt $sub) { $ins } else { $sub } }
-            }
-            # swap prev and curr arrays
-            $temp = $prev; $prev = $curr; $curr = $temp
-        }
-
-        return [int]$prev[$n]
-    }
 
     # avoid unused-parameter warning
     $null = $Context
@@ -68,6 +68,8 @@
                 $tokenLen = [int][string]::IsNullOrEmpty($tokenBase) ? 0 : $tokenBase.Length
                 $candLen = [int][string]::IsNullOrEmpty($candidateBase) ? 0 : $candidateBase.Length
                 if ($candLen -lt 2 -or $tokenLen -lt 2) { continue }
+
+                # Call top-level Get-LevenshteinDistance (now available globally when this file is dot-sourced)
                 $dist = Get-LevenshteinDistance -s $tokenBase.ToLower() -t $candidateBase.ToLower()
                 $maxLen = [Math]::Max($tokenLen, $candLen)
                 if ($maxLen -eq 0) { continue }

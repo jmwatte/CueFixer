@@ -1,0 +1,18 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "PowerShell: Get-CueAuditCore (D:\\test)",
+      "type": "PowerShell",
+      "request": "launch",
+      "script": "${workspaceFolder}/.vscode/run-audit-debug.ps1",
+      "args": [
+        "-TargetPath",
+        "\"D:\\test\\copied-unfixable-folders-20250822181228\\1949-1955 (CC 1287)\""
+      ],
+      "cwd": "${workspaceFolder}",
+      "createTemporaryIntegratedConsole": true,
+      "internalConsoleOptions": "openOnSessionStart"
+    }
+  ]
+}

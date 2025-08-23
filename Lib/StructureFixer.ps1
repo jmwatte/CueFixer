@@ -20,93 +20,113 @@ Set-CueFileStructure -CueFilePath 'C:\Music\Album\album.cue'
 #>
 function Set-CueFileStructureImpl {
     [OutputType([PSCustomObject])]
-    [CmdletBinding(SupportsShouldProcess=$true)]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     param (
-        [Parameter(Mandatory=$true)] [string]$CueFilePath,
+        [Parameter(Mandatory = $true)]
+        [string]$CueFilePath,
+
         [switch]$WriteChanges
     )
 
     $lines = Get-Content -LiteralPath $CueFilePath
-    $reFile = '^\s*FILE\s+"(.+?)"\s+\w+'
-    $reTrack = '^\s*TRACK\s+([0-9]+)\s+\w+'
+    $reFile    = '^\s*FILE\s+"(.+?)"\s+\w+'
+    $reTrack   = '^\s*TRACK\s+([0-9]+)\s+\w+'
+    $reIndex0  = '^\s*INDEX\s+00\s+'
+    $reIndex1  = '^\s*INDEX\s+01\s+'
+    $reMeta    = '^\s*(TITLE|PERFORMER|FLAGS|PREGAP)\b'
+    $reHeader  = '^\s*(REM|GENRE|DATE|DISCID|COMMENT|TITLE|PERFORMER)\b'
 
-    $reIndex0 = '^\s*INDEX\s+00\s+'
-    $reIndex1 = '^\s*INDEX\s+01\s+'
-    $reMeta = '^\s*(TITLE|PERFORMER|FLAGS|PREGAP)\b'
-    $reHeader = '^\s*(REM|GENRE|DATE|DISCID|COMMENT|TITLE|PERFORMER)\b'
-
-
-    $header = [System.Collections.ArrayList]::new()
+    $header     = [System.Collections.ArrayList]::new()
     $fileBlocks = [System.Collections.ArrayList]::new()
-
     $currentFile = $null
     $trackBuffer = $null
-
     $insideTrack = $false
 
     foreach ($line in $lines) {
-        # If we encounter a new FILE while inside a track, finalize the track first
-        if ($insideTrack -and $line -match $reFile) {
-            # ensure trackBuffer has an INDEX 01
-            if ($trackBuffer -and -not ($trackBuffer -join "`n" -match $reIndex1)) {
-                $trackBuffer.Add("    INDEX 01 00:00:00") | Out-Null
-            }
-            if ($null -ne $currentFile) { $currentFile.Tracks.Add($trackBuffer) | Out-Null }
-            $trackBuffer = $null
-            $insideTrack = $false
-        }
+        $trimmed = $line.Trim()
 
-        if ($line -match $reHeader -and $null -eq $currentFile -and -not $insideTrack) {
-            $header.Add($line) | Out-Null
+        if ($trimmed -match $reHeader -and -not $insideTrack -and -not $currentFile) {
+            $header.Add($trimmed) | Out-Null
             continue
         }
 
-        if ($line -match $reFile) {
+        if ($trimmed -match $reTrack) {
+            # Finalize previous track
+            if ($trackBuffer) {
+                $hasIndex01 = $false
+                foreach ($entry in $trackBuffer) {
+                    if ($entry -match $reIndex1) {
+                        $hasIndex01 = $true
+                        break
+                    }
+                }
+                if (-not $hasIndex01) {
+                    $trackBuffer.Add("    INDEX 01 00:00:00") | Out-Null
+                }
+                $currentFile.Tracks.Add($trackBuffer) | Out-Null
+            }
+
+            $trackBuffer = [System.Collections.ArrayList]::new()
+            $trackBuffer.Add($trimmed) | Out-Null
+            $insideTrack = $true
+            continue
+        }
+
+        if ($trimmed -match $reFile) {
+            # Finalize previous track if still open
+            if ($insideTrack -and $trackBuffer) {
+                $hasIndex01 = $false
+                foreach ($entry in $trackBuffer) {
+                    if ($entry -match $reIndex1) {
+                        $hasIndex01 = $true
+                        break
+                    }
+                }
+                if (-not $hasIndex01) {
+                    $trackBuffer.Add("    INDEX 01 00:00:00") | Out-Null
+                }
+                $currentFile.Tracks.Add($trackBuffer) | Out-Null
+                $trackBuffer = $null
+                $insideTrack = $false
+            }
+
             $currentFile = [PSCustomObject]@{
-                FileLine = $line
+                FileLine = $trimmed
                 Tracks   = [System.Collections.ArrayList]::new()
             }
             $fileBlocks.Add($currentFile) | Out-Null
             continue
         }
 
-        if ($line -match $reTrack) {
-            $trackBuffer = [System.Collections.ArrayList]::new()
-            $trackBuffer.Add($line) | Out-Null
-            $insideTrack = $true
+        if ($insideTrack -and ($trimmed -match $reMeta -or $trimmed -match $reIndex1)) {
+            $trackBuffer.Add($trimmed) | Out-Null
             continue
         }
 
-        if ($insideTrack -and $line -match $reMeta) {
-            $trackBuffer.Add($line) | Out-Null
-            continue
-        }
-
-        if ($insideTrack -and $line -match $reIndex0) {
-            continue
-        }
-
-        if ($insideTrack -and $line -match $reIndex1) {
-            $trackBuffer.Add("    INDEX 01 00:00:00") | Out-Null
-            if ($null -ne $currentFile) {
-                $currentFile.Tracks.Add($trackBuffer) | Out-Null
-            }
-            $trackBuffer = $null
-            $insideTrack = $false
+        if ($insideTrack -and $trimmed -match $reIndex0) {
             continue
         }
     }
 
-    # If file ended while inside a track, finalize it
+    # Finalize last track
     if ($insideTrack -and $trackBuffer) {
-        if (-not ($trackBuffer -join "`n" -match $reIndex1)) {
+        $hasIndex01 = $false
+        foreach ($entry in $trackBuffer) {
+            if ($entry -match $reIndex1) {
+                $hasIndex01 = $true
+                break
+            }
+        }
+        if (-not $hasIndex01) {
             $trackBuffer.Add("    INDEX 01 00:00:00") | Out-Null
         }
-        if ($null -ne $currentFile) { $currentFile.Tracks.Add($trackBuffer) | Out-Null }
+        $currentFile.Tracks.Add($trackBuffer) | Out-Null
     }
 
+    # Reconstruct fixed cue file
     $fixedLines = [System.Collections.ArrayList]::new()
-    foreach ($h in $header) { $fixedLines.Add($h) | Out-Null }
+    $header | ForEach-Object { $fixedLines.Add($_) | Out-Null }
+
     foreach ($fb in $fileBlocks) {
         $fixedLines.Add($fb.FileLine) | Out-Null
         foreach ($trk in $fb.Tracks) {
@@ -117,21 +137,16 @@ function Set-CueFileStructureImpl {
     }
 
     $originalText = $lines -join "`r`n"
-    $fixedText = $fixedLines -join "`r`n"
+    $fixedText    = $fixedLines -join "`r`n"
 
     if ($originalText -ne $fixedText) {
         if ($WriteChanges) {
-            # In library implementation we perform the write when requested so tests and
-            # dot-sourced runspaces reliably observe the backup and changed file. If a
-            # caller wants interactive confirmation they should wrap this call with
-            # ShouldProcess in their public wrapper.
             Copy-Item -LiteralPath $CueFilePath -Destination "$CueFilePath.bak" -Force
             Set-Content -LiteralPath $CueFilePath -Value $fixedText -Encoding UTF8 -Force
         }
-    return [PSCustomObject]@{ Changed = $true; FixedText = $fixedText }
-    }
-    else {
-    return [PSCustomObject]@{ Changed = $false; FixedText = $originalText }
+        return [PSCustomObject]@{ Changed = $true; FixedText = $fixedText }
+    } else {
+        return [PSCustomObject]@{ Changed = $false; FixedText = $originalText }
     }
 }
 
