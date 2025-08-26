@@ -1,0 +1,73 @@
+﻿param(
+	[switch]$Apply
+)
+
+$ErrorActionPreference = 'Stop'
+$root = Split-Path -Path $PSScriptRoot -Parent
+Write-Host "Scanning repository: $root"
+
+$excludeRegex = '\\(?:bin|obj|\.git)\\'
+$patterns = @('^```$', '^\.DESCRIPTION$', '^\.[A-Z]{3,}$')
+
+$changes = [System.Collections.ArrayList]::new()
+
+$files = Get-ChildItem -Path $root -Recurse -Include '*.ps1', '*.psm1' -File -ErrorAction SilentlyContinue |
+Where-Object { $_.FullName -notmatch $excludeRegex }
+
+foreach ($f in $files) {
+	$lines = Get-Content -LiteralPath $f.FullName -ErrorAction SilentlyContinue
+	$out = [System.Collections.Generic.List[string]]::new()
+	$inBlock = $false
+	$modified = $false
+
+	for ($i = 0; $i -lt $lines.Count; $i++) {
+		$line = $lines[$i]
+
+		if (-not $inBlock -and $line -match '<#') { $inBlock = $true }
+		if ($inBlock -and $line -match '#>') { $inBlock = $false; $out.Add($line); continue }
+
+		if (-not $inBlock) {
+			$trim = $line.Trim()
+			$isCandidate = $false
+			foreach ($pat in $patterns) {
+				if ($trim -match $pat) { $isCandidate = $true; break }
+			}
+			if ($isCandidate) {
+				$null = $changes.Add([PSCustomObject]@{ File = $f.FullName; Line = $i + 1; Text = $line; Reason = $trim })
+				$modified = $true
+				continue
+			}
+		}
+
+		$out.Add($line)
+	}
+
+	if ($modified -and $Apply) {
+		$bak = "$($f.FullName).bak"
+		if (-not (Test-Path -LiteralPath $bak)) { Copy-Item -LiteralPath $f.FullName -Destination $bak -Force }
+		$out | Set-Content -LiteralPath $f.FullName -Encoding UTF8
+	}
+}
+
+if ($changes.Count -eq 0) {
+	Write-Host 'No trivial non-PS tokens found outside block comments.' -ForegroundColor Green
+	exit 0
+}
+
+$changes | Format-Table -AutoSize
+
+if ($Apply) {
+	Write-Host 'Applied fixes; .bak copies created.' -ForegroundColor Green
+	exit 0
+}
+else {
+	Write-Host 'Run with -Apply to remove the listed lines (a .bak copy will be created).' -ForegroundColor Yellow
+	exit 1
+}
+Write-Host 'No trivial non-PS tokens found outside block comments.' -ForegroundColor Green
+
+
+
+
+
+

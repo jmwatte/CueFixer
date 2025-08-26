@@ -1,4 +1,4 @@
-function Get-FileContentRaw {
+﻿function Get-FileContentRaw {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory=$true, Position=0)] [string]$Path
@@ -26,3 +26,9 @@ function Save-FileWithBackup {
 
     return $false
 }
+
+
+
+
+
+

@@ -1,4 +1,4 @@
-function Get-AuditSummary {
+﻿function Get-AuditSummary {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory=$true)] $Results
@@ -43,3 +43,9 @@ function Get-AuditSummary {
         Unfixable = $unfixableMatches.Count
     }
 }
+
+
+
+
+
+
