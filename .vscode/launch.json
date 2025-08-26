@@ -8,7 +8,7 @@
       "script": "${workspaceFolder}/Public/Run-InteractiveFix.ps1",
       "args": [
         "-Path",
-        "D:\\test",
+        "\"D:\\(2014) Skrillex - Recess\\test.cue\"",
         "-Recurse",
         "-FullCueLeft",
         "-Verbose"

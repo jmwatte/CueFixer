@@ -19,21 +19,25 @@ Get-CueAudit -Path . | Show-Fixables -DryRun
 function Show-Fixable {
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory=$true, ValueFromPipeline=$true)] $Results,
+        [Parameter(Mandatory = $true, ValueFromPipeline = $true)] $Results,
         [switch]$DryRun
     )
 
     process {
         foreach ($cue in $Results | Where-Object { $_.Status -eq 'Fixable' }) {
-            Write-Verbose "`n\ud83d\udd0d Processing: $($cue.Path)"
+            Write-Verbose "`n🔍 Processing: $($cue.Path)"
             foreach ($fix in $cue.Fixes) {
-                Write-Verbose "\u274c OLD: $($fix.Old)"
-                Write-Verbose "\u2705 NEW: $($fix.New)"
+                Write-Verbose "❌ OLD: $($fix.Old)"
+                Write-Verbose "✅ NEW: $($fix.New)"
             }
-            if ($DryRun) { Write-Verbose "\ud83e\uddea Dry-run mode \u2014 no changes saved." }
+
         }
+       if ($DryRun) {
+    Write-Verbose "🛪 Dry-run mode — no changes saved."
+}
     }
 }
+
 
 
 

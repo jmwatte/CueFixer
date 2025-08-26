@@ -81,7 +81,7 @@ function Get-CueAudit {
             }
             else {
                 # Single file path provided
-                if ([string]::Equals([System.IO.CuePath]::GetExtension($item.FullName), '.cue', 'OrdinalIgnoreCase')) {
+                if ([string]::Equals([System.IO.Path]::GetExtension($item.FullName), '.cue', 'OrdinalIgnoreCase')) {
                     $files = @($item)
                 }
                 else {
@@ -140,7 +140,7 @@ if ((Test-Path Variable:PSModuleInfo) -and ($null -ne $PSModuleInfo)) {
 # This lets users run the script as: .\Public\Get-CueAudit.ps1 -Path 'D:\' -Recurse -WhatIf
 if ($PSCommandPath -and ($CuePath -or $args.Count -gt 0)) {
     try {
-        Get-CueAudit -Path $CuePath -Recurse:$Recurse -WhatIf:$WhatIf -Confirm:$Confirm
+        Get-CueAudit -CuePath $CuePath -Recurse:$Recurse -WhatIf:$WhatIf -Confirm:$Confirm
     }
     catch {
         Write-Error $_.ToString()

@@ -550,7 +550,18 @@ function Invoke-InteractiveFixImpl {
                 [void]$cueList.Add($CueFilesCollection)
             }
         }
+$uniqueCueListRaw = $cueList | Sort-Object -Unique
+$finalCueList = New-Object System.Collections.ArrayList
+if ($uniqueCueListRaw -is [System.Collections.IEnumerable] -and -not ($uniqueCueListRaw -is [string])) {
+    foreach ($item in $uniqueCueListRaw) {
+        [void]$finalCueList.Add($item)
+    }
+} else {
+    [void]$finalCueList.Add($uniqueCueListRaw)
+}
+        $cueList = $finalCueList
 
+        
         # If no items were collected, bail with a helpful message
         if (-not $cueList -or $cueList.Count -eq 0) {
             Write-Warning "No cue files provided to Invoke-InteractiveFixImpl; nothing to do."
@@ -754,46 +765,192 @@ function Invoke-InteractiveFixImpl {
                     catch { Write-Warning "Failed to apply fixes: $($_.Exception.Message)" }
                     continue
                 }
+                'M' {
+                    # Make minimal cuefile from current folder audio, open it for user editing,
+                    # then ALWAYS finalize it into a playable cue after the editor is closed.
+                    $cueFolder = $currentFile.DirectoryName
+                    $proposed = Join-Path $cueFolder ($currentFile.BaseName + '.cue')
 
-  'M' {
-        # Make minimal cuefile from current folder audio
-        $cueFolder = $currentFile.DirectoryName
-        # propose output path: base name + '.cue' but avoid overwriting if file exists unless user confirms
-        $proposed = Join-Path $cueFolder ($currentFile.BaseName + '.cue')
-        if (Test-Path $proposed) {
-            $ok = Read-OneKey "Output '$proposed' already exists. Overwrite? [y/N] "
-            if ($ok -notmatch '^[Yy]') { Write-Host "Skipped creating cue."; break }
-        }
-        # Ensure helper is available
-        if (-not (Get-Command -Name New-CueFileFromFolder -ErrorAction SilentlyContinue)) {
-            # Best-effort: dot-source helper from Lib
-            $helper = Join-Path $PSScriptRoot '..\Lib\MakeCueFromFolder.ps1'
-            if (Test-Path $helper) { . $helper } else {
-                Write-Warning "MakeCue helper not found: $helper. Cannot create cue."
-                break
-            }
-        }
+                    # Overwrite prompt if target exists
+                    if (Test-Path $proposed) {
+                        $ok = Read-OneKey "Output '$proposed' already exists. Overwrite? [y/N] "
+                        if ($ok -notmatch '^[Yy]') { Write-Host "Skipped creating cue."; break }
+                    }
 
-        try {
-            $out = New-CueFileFromFolder -FolderPath $cueFolder -OutputCuePath $proposed -Overwrite
-            if ($out) {
-                Write-Host "Created minimal cue: $out" -ForegroundColor Green
-                # Offer to open it for editing immediately
-                $open = Read-OneKey "Open the generated cue in editor now? [Y/n] "
-                if ($open -notmatch '^[Nn]') {
-                    # Try to open in user's default editor or Explorer
-                    try { if ($env:VISUAL) { & $env:VISUAL $out } else { Invoke-Item $out } } catch { Invoke-Item $out }
+                    # Ensure generator helper is available
+                    if (-not (Get-Command -Name New-CueFileFromFolder -ErrorAction SilentlyContinue)) {
+                        $helper = Join-Path $PSScriptRoot '..\Lib\MakeCueFromFolder.ps1'
+                        if (Test-Path $helper) { . $helper } else {
+                            Write-Warning "MakeCue helper not found: $helper. Cannot create cue."
+                            break
+                        }
+                    }
+
+                    try {
+                        $gen = New-CueFileFromFolder -FolderPath $cueFolder -OutputCuePath $proposed -Overwrite:$true
+                    }
+                    catch {
+                        Write-Warning "Failed to create minimal cue: $($_.Exception.Message)"
+                        break
+                    }
+
+                    # Normalize returned path: accept string or PSCustomObject shapes
+                    $generatedPath = $null
+                    if ($gen -is [string]) { $generatedPath = $gen }
+                    elseif ($gen -and $gen.PSObject.Properties.Name -contains 'OutPath') { $generatedPath = $gen.OutPath }
+                    elseif ($gen -and $gen.PSObject.Properties.Name -contains 'CuePath') { $generatedPath = $gen.CuePath }
+                    elseif ($gen -and $gen.PSObject.Properties.Name -contains 'Path') { $generatedPath = $gen.Path }
+                    else { $generatedPath = $proposed }
+
+                    if (-not $generatedPath -or -not (Test-Path $generatedPath)) {
+                        Write-Warning "No cue created at expected path '$proposed'. Aborting M flow."
+                        break
+                    }
+
+                    Write-Host "Created minimal cue: $generatedPath" -ForegroundColor Green
+
+                    # Open it for editing if user wants (existing UX)
+                    $open = Read-OneKey "Open the generated cue in editor now? [Y/n] "
+                    if ($open -notmatch '^[Nn]') {
+                        try {
+                            if (Get-Command -Name Open-InEditor -ErrorAction SilentlyContinue) {
+                                Open-InEditor $generatedPath
+                            }
+                            elseif ($env:EDITOR) {
+                                Start-Process -FilePath $env:EDITOR -ArgumentList $generatedPath -ErrorAction Stop
+                            }
+                            elseif ($env:VISUAL) {
+                                Start-Process -FilePath $env:VISUAL -ArgumentList $generatedPath -ErrorAction Stop
+                            }
+                            else {
+                                Start-Process -FilePath 'notepad.exe' -ArgumentList $generatedPath -ErrorAction Stop
+                            }
+                        }
+                        catch {
+                            Write-Verbose "Failed to open editor: $($_.Exception.Message). Falling back to notepad."
+                            try { Start-Process -FilePath 'notepad.exe' -ArgumentList $generatedPath -ErrorAction Stop } catch { Write-Warning "Unable to open an editor for '$generatedPath'." }
+                        }
+
+                        # Wait for user to finish editing (preserve current UX)
+                        try { Read-OneKey "Press any key when finished editing to continue... " | Out-Null } catch { Read-Host "Press Enter when finished editing to continue..." | Out-Null }
+
+                        # After editing, auto-finalize (no opt-out)
+                        try {
+                            $lines = Get-Content -LiteralPath $generatedPath -ErrorAction Stop | ForEach-Object { ($_ -as [string]).Trim() }
+                        }
+                        catch {
+                            Write-Warning "Cannot read generated cue to finalize: $($_.Exception.Message)"
+                            continue
+                        }
+
+                        $fileCount = (($lines | Where-Object { $_ -match '(?i)^\s*FILE\s+' }) | Measure-Object).Count
+                        if ($fileCount -eq 0) {
+                            Write-Warning "Generated/edited cue contains no 'FILE' entries; skipping automatic finalization."
+                            continue
+                        }
+
+                        # Ensure finalizer helper is available
+                        if (-not (Get-Command -Name Complete-CueFromEditedFile -ErrorAction SilentlyContinue)) {
+                            $finalizer = Join-Path $PSScriptRoot '..\Lib\FinalizeCue.ps1'
+                            if (Test-Path $finalizer) { . $finalizer } else {
+                                Write-Warning "Finalizer helper not found: $finalizer. Cannot finalize cue."
+                                continue
+                            }
+                        }
+
+                        # Run finalizer (creates backup). No interactive opt-out; backup is automatic.
+                        try {
+                            $r = Complete-CueFromEditedFile -CuePath $generatedPath -Overwrite:$true
+                            if ($r) {
+                                Write-Host "Finalized cue: $($r.CuePath) (backup: $($r.Backup))" -ForegroundColor Green
+                                # Open finalized cue for review
+                                try { Invoke-Item $r.CuePath } catch { Invoke-Item $r.CuePath }
+                            }
+                            else {
+                                Write-Warning "Finalizer ran but returned no result."
+                            }
+                        }
+                        catch {
+                            Write-Warning "Automatic finalization failed: $($_.Exception.Message)"
+                        }
+                    }
+                    else {
+                        Write-Host "Not opening generated cue." -ForegroundColor DarkCyan
+                        # If user chose not to open the file, still attempt to finalize immediately
+                        try {
+                            $lines = Get-Content -LiteralPath $generatedPath -ErrorAction Stop | ForEach-Object { ($_ -as [string]).Trim() }
+                            $fileCount = (($lines | Where-Object { $_ -match '(?i)^\s*FILE\s+' }) | Measure-Object).Count
+                            if ($fileCount -gt 0) {
+                                if (-not (Get-Command -Name Complete-CueFromEditedFile -ErrorAction SilentlyContinue)) {
+                                    $finalizer = Join-Path $PSScriptRoot '..\Lib\FinalizeCue.ps1'
+                                    if (Test-Path $finalizer) { . $finalizer } else { Write-Warning "Finalizer helper not found: $finalizer. Cannot finalize cue."; continue }
+                                }
+                                $r = Complete-CueFromEditedFile -CuePath $generatedPath -Overwrite:$true
+                                if ($r) { Write-Host "Finalized cue: $($r.CuePath) (backup: $($r.Backup))" -ForegroundColor Green }
+                            }
+                            else {
+                                Write-Warning "Generated cue contains no 'FILE' entries; skipping automatic finalization."
+                            }
+                        }
+                        catch {
+                            Write-Warning "Automatic finalization (no-edit path) failed: $($_.Exception.Message)"
+                        }
+                    }
+
+                    continue
                 }
-                # After creation, it may be useful to re-analyze later (user will re-run audit)
-            } else {
-                Write-Warning "No cue created."
-            }
-        } catch {
-            Write-Host "Failed to create cue: $($_.Exception.Message)" -ForegroundColor Red
-        }
-    }
+                # --- Insert into Lib\Interactive.ps1, inside the interactive switch($selKey) where 'M' is handled ---
+                'C' {
+                    # Finalize the current edited minimal cue into a playable cue (one TRACK per FILE)
+                    $cuePath = $currentFile.FullName
+                    # If the cue already contains TRACK lines, warn first
+                    try {
+                        $rawLines = Get-Content -LiteralPath $cuePath -ErrorAction Stop | ForEach-Object { ($_ -as [string]).Trim() }
+                    }
+                    catch {
+                        Write-Warning "Cannot read cue file to finalize: $($cuePath) : $($_.Exception.Message)"
+                        continue
+                    }
 
+                    if ($rawLines -match '(?i)^\s*TRACK\s+\d+') {
+                        $ok = Read-OneKey "Cue already contains TRACK entries. Overwrite and regenerate? [y/N] "
+                        if ($ok -notmatch '^[Yy]') { Write-Host "Skipped finalize."; continue }
+                    }
 
+                    # If helper not available, attempt to dot-source it
+                    if (-not (Get-Command -Name Complete-CueFromEditedFile -ErrorAction SilentlyContinue)) {
+                        $helper = Join-Path $PSScriptRoot '..\Lib\FinalizeCue.ps1'
+                        if (Test-Path $helper) { . $helper } else {
+                            Write-Warning "Finalizer helper not found: $helper. Cannot complete cue."
+                            continue
+                        }
+                    }
+
+                    # Confirm for single-file cues (since automatic splitting is not applied)
+                    $fileCount = (($rawLines | Where-Object { $_ -match '(?i)^\s*FILE\s+' }) | Measure-Object).Count
+                    if ($fileCount -eq 1) {
+                        $ok = Read-OneKey "Cue references a single audio file. Do you want to create a single-TRACK cue now? [y/N] "
+                        if ($ok -notmatch '^[Yy]') { Write-Host "Skipped finalize for single-file cue."; continue }
+                    }
+
+                    # Confirm overwrite of the cue (backup will be created automatically)
+                    $confirm = Read-OneKey "Create finalized playable cue (backups saved) for '$([System.IO.Path]::GetFileName($cuePath))'? [Y/n] "
+                    if ($confirm -match '^[Nn]') { Write-Host "Cancelled finalize."; continue }
+
+                    try {
+                        $r = Complete-CueFromEditedFile -CuePath $cuePath -Overwrite
+                        Write-Host "Finalized cue: $($r.CuePath) (backup: $($r.Backup))" -ForegroundColor Green
+                        # Offer to open the file for review/editing
+                        $open = Read-OneKey "Open finalized cue now? [Y/n] "
+                        if ($open -notmatch '^[Nn]') { try { Invoke-Item $r.CuePath } catch { Invoke-Item $r.CuePath } }
+                    }
+                    catch {
+                        Write-Warning "Failed to finalize cue: $($_.Exception.Message)"
+                    }
+
+                    # re-analyze the file so UI updates status on next loop iteration
+                    continue
+                }
 
 
                 'D' {

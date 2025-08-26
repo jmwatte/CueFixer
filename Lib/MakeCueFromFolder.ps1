@@ -42,7 +42,7 @@ function New-CueFileFromFolder {
         return $null
     }
 
-    if (Test-Path $OutputCuePath -and -not $Overwrite) {
+    if ((Test-Path $OutputCuePath) -and -not $Overwrite) {
         throw "Output path already exists: $OutputCuePath (use -Overwrite to replace)"
     }
 
