@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+  # Use runner's preinstalled PowerShell Core (pwsh). Removing broken third-party action.
+
+      - name: Run format check
+        shell: pwsh
+        run: |
+          pwsh -NoProfile -Command "& './tools/check-format.ps1'"
+
+      - name: Install PSScriptAnalyzer
+        shell: pwsh
+        run: |
+          Install-Module -Name PSScriptAnalyzer -Force -Scope CurrentUser -AllowClobber
+
+      - name: Run PSScriptAnalyzer
+        shell: pwsh
+        run: |
+          $findings = Invoke-ScriptAnalyzer -Path . -Recurse -Severity Warning -ErrorAction SilentlyContinue
+          if ($findings -and $findings.Count -gt 0) {
+              $findings | ForEach-Object { Write-Error "PSA: $($_.RuleName): $($_.Message) ($($_.ScriptPath):$($_.Line))" }
+              exit 1
+          }
+
+      - name: Install Pester
+        shell: pwsh
+        run: |
+          Install-Module -Name Pester -Force -Scope CurrentUser -AllowClobber
+
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          Import-Module Pester -ErrorAction Stop
+          Invoke-Pester -Path .\Tests -Output Detailed
