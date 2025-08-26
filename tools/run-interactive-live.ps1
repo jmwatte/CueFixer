@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
   Safe runner to exercise the interactive implementation on real folders.
 
@@ -68,3 +68,4 @@ foreach ($folder in $Folders) {
 }
 
 if ($Trace) { Write-Host "Trace log: $(Join-Path $env:TEMP 'cuefixer-interactive-log.json')" }
+

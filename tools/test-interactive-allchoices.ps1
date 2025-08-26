@@ -1,4 +1,4 @@
-<#
+﻿<#
 Non-interactive harness to exercise Invoke-InteractiveFix for each choice: A,E,P,R,S.
 Produces a single JSON report mapping each choice to observed effects.
 
@@ -121,3 +121,4 @@ try {
     @{ error = $_.Exception.Message } | ConvertTo-Json -Depth 5
     exit 1
 }
+

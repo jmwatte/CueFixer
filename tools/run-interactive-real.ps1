@@ -1,4 +1,4 @@
-<#
+﻿<#
 Run a real interactive session for testing Invoke-InteractiveFix.
 
 By default this runner is SAFE: it will import the module and run the interactive
@@ -91,3 +91,4 @@ try {
 } finally {
     Pop-Location
 }
+

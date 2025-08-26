@@ -1,4 +1,4 @@
-<#
+﻿<#
 Safe, non-interactive tests for Invoke-InteractiveFixImpl choices A/E/P/R/S
 This script is tolerant: it attempts to Import-Module first, and if that fails
 it fallbacks to dot-sourcing Lib and Public files while providing a temporary
@@ -152,3 +152,4 @@ try {
     Pop-Location -ErrorAction SilentlyContinue
     exit 1
 }
+

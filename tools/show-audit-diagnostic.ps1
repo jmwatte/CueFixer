@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
   Show detailed diagnostic for a CueFixer audit item.
 
@@ -122,3 +122,4 @@ end {
         Write-Error $_.Exception.Message
     }
 }
+

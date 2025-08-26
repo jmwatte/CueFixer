@@ -1,7 +1,55 @@
 {
-  
   "version": "0.2.0",
   "configurations": [
+    {
+      "type": "PowerShell",
+      "request": "launch",
+      "name": "PowerShell: Debug Run-InteractiveFix (D:\\test)",
+      "script": "${workspaceFolder}/Public/Run-InteractiveFix.ps1",
+      "args": [
+        "-Path",
+        "D:\\test",
+        "-Recurse",
+        "-FullCueLeft",
+        "-Verbose"
+      ],
+      "cwd": "${workspaceFolder}",
+      
+      "createTemporaryIntegratedConsole": true,
+      "internalConsoleOptions": "neverOpen"
+    },
+    {
+      "type": "PowerShell",
+      "request": "launch",
+      "name": "PowerShell: Debug Current File (with args)",
+      "script": "${file}",
+      "args": [
+        "-Path",
+        "D:\\test",
+        "-Recurse"
+      ],
+      "cwd": "${workspaceFolder}",
+      
+      "createTemporaryIntegratedConsole": true,
+      "internalConsoleOptions": "neverOpen"
+    },
+    {
+      "type": "PowerShell",
+      "request": "launch",
+      "name": "CueFixer: Run interactive folder (D:\\test, Recurse)",
+      "script": "${workspaceFolder}/Public/Run-InteractiveFix.ps1",
+      "args": [
+        "-Path",
+        "D:\\test",
+        "-Recurse"
+      ],
+      "cwd": "${workspaceFolder}",
+      //"createTemporaryIntegratedConsole": true,
+      //"env": {
+      // optional: disable heavy automatic preview to avoid input bleed
+      // "CUEFIXER_INTERACTIVE_PREVIEW": "0"
+      // }
+    },
     {
       "type": "PowerShell",
       "request": "launch",
@@ -17,6 +65,56 @@
       ],
       "cwd": "${workspaceFolder}",
       "createTemporaryIntegratedConsole": true,
+      "presentation": {
+        "reveal": "always"
+      }
+    },
+    {
+      "type": "PowerShell",
+      "request": "launch",
+      "name": "CueFixer: audit → repair → re-audit workflow",
+      "script": "${workspaceFolder}\\.vscode\\run-cuefixer-workflow.ps1",
+      "args": [
+        "-TargetPath",
+        "D:\\",
+        "-OutBefore",
+        "C:\\Temp\\cue-audit-d-drive.clixml",
+        "-OutAfter",
+        "C:\\Temp\\cue-audit-d-drive-after.clixml",
+        "-GenerateProposed"
+      ],
+      "cwd": "${workspaceFolder}",
+      "createTemporaryIntegratedConsole": true
+    },
+    {
+      "type": "PowerShell",
+      "request": "launch",
+      "name": "Debug: Re-analyze CLIXML (proposed fixes)",
+      "script": "${workspaceFolder}\\.vscode\\debug-reanalyze-clixml.ps1",
+      "args": [
+        "-InputFile",
+        "C:\\Temp\\cue-audit-d-drive.clixml"
+      ],
+      "cwd": "${workspaceFolder}",
+      "createTemporaryIntegratedConsole": true,
+      "presentation": {
+        "reveal": "always"
+      }
+    },
+    {
+      "type": "PowerShell",
+      "request": "launch",
+      "name": "Invoke Interactive (Unfixables)",
+      "script": "${workspaceFolder}\\.vscode\\invoke-interactive-unfixables.ps1",
+      "args": [
+        "-InputFile",
+        "C:\\Temp\\cue-audit-d-drive.clixml",
+        "-Verbose",
+        "-FullCueLeft"
+      ],
+      "cwd": "${workspaceFolder}",
+      "createTemporaryIntegratedConsole": true,
+      "internalConsoleOptions": "neverOpen",
       "presentation": {
         "reveal": "always"
       }

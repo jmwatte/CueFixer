@@ -1,4 +1,4 @@
-# Open-InEditor helper (moved to Lib so module can load it)
+﻿# Open-InEditor helper (moved to Lib so module can load it)
 function Open-InEditor {
     [CmdletBinding()]
     param(
@@ -13,8 +13,8 @@ function Open-InEditor {
     Write-Verbose ([string]::Format('Opening file {0} with editor: {1}', $filePath, $editor))
 
     if ([string]::IsNullOrWhiteSpace($editor)) {
-        # No editor configured; open by file association
-        try { Start-Process -FilePath $filePath -ErrorAction Stop } catch { Write-Verbose "Failed to open file: $($_.Exception.Message)" }
+        # No editor configured; open by file association and wait for the process to exit
+        try { Start-Process -FilePath $filePath -ErrorAction Stop -Wait } catch { Write-Verbose "Failed to open file: $($_.Exception.Message)" }
         return
     }
 
@@ -24,7 +24,26 @@ function Open-InEditor {
         try {
             $exe = $cmd.Path
             if ([string]::IsNullOrWhiteSpace($exe)) { $exe = $editor }
-			Start-Process -FilePath $exe -ArgumentList @("`"$filePath`"") -ErrorAction Stop
+
+            # Special-case VS Code CLI which returns immediately unless --wait is provided
+            $exeName = [System.IO.Path]::GetFileNameWithoutExtension($exe).ToLowerInvariant()
+            if ($exeName -in @('code','code-insiders')) {
+                Start-Process -FilePath $exe -ArgumentList @('--wait', $filePath) -ErrorAction Stop -Wait
+                return
+            }
+
+            # If it's likely a terminal/console editor (helix 'hx', 'nvim', 'vim'), invoke synchronously so it takes over the current console
+            if ($exeName -in @('hx','nvim','vim','vi','emacs')) {
+                try {
+                    & $exe $filePath
+                    return
+                } catch {
+                    # fallback to Start-Process -Wait
+                }
+            }
+
+            # Default: start process and wait for it to exit
+            Start-Process -FilePath $exe -ArgumentList @($filePath) -ErrorAction Stop -Wait
             return
         }
         catch {
@@ -34,7 +53,7 @@ function Open-InEditor {
 
     # Try starting the editor directly (maybe it's a full path)
     try {
-        Start-Process -FilePath $editor -ArgumentList $filePath -ErrorAction Stop
+        Start-Process -FilePath $editor -ArgumentList $filePath -ErrorAction Stop -Wait
         return
     }
     catch {
@@ -42,5 +61,6 @@ function Open-InEditor {
     }
 
     # Fallback: open by file association
-    try { Start-Process -FilePath $filePath -ErrorAction Stop } catch { Write-Verbose "Final fallback failed: $($_.Exception.Message)" }
+    try { Start-Process -FilePath $filePath -ErrorAction Stop -Wait } catch { Write-Verbose "Final fallback failed: $($_.Exception.Message)" }
 }
+

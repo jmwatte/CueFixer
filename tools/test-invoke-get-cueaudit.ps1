@@ -1,4 +1,4 @@
-Write-Output '=== Test runner: Get-CueAudit invocation styles ==='
+﻿Write-Output '=== Test runner: Get-CueAudit invocation styles ==='
 
 $fixture = Join-Path $PSScriptRoot '..\Tests\Fixtures\album.cue' | Resolve-Path -ErrorAction SilentlyContinue
 if (-not $fixture) {
@@ -41,3 +41,4 @@ catch {
 }
 
 Write-Output "\n=== Test runner complete ==="
+

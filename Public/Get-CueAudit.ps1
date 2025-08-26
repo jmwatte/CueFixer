@@ -8,8 +8,8 @@ audit object per file describing its status (Clean, Fixable, Unfixable), propose
 fixes, and structural errors. Analysis is delegated to Get-CueAuditCore. This
 wrapper is intentionally non-destructive and supports -WhatIf/-Confirm.
 
-.PARAMETER Path
-Path to a .cue file or folder containing .cue files. Accepts pipeline input.
+.PARAMETER CuePath
+CuePath to a .cue file or folder containing .cue files. Accepts pipeline input.
 
 .PARAMETER Recurse
 If specified and a folder path is provided, search subfolders for .cue files.
@@ -25,7 +25,7 @@ Run with -WhatIf to preview the files that would be audited.
 #>
 param(
     [Parameter(ValueFromPipeline=$true, ValueFromPipelineByPropertyName=$true)]
-    [string[]]$Path,
+    [string[]]$CuePath,
     [switch]$Recurse,
     [switch]$WhatIf,
     [switch]$Confirm,
@@ -37,7 +37,7 @@ function Get-CueAudit {
     [CmdletBinding(SupportsShouldProcess=$true)]
     param(
         [Parameter(Mandatory=$true, ValueFromPipeline=$true, ValueFromPipelineByPropertyName=$true)]
-        [string[]]$Path,
+        [string[]]$CuePath,
         [switch]$Recurse,
         [string]$OutFile,
         [ValidateSet('clixml','csv','json')] [string]$OutFormat = 'clixml'
@@ -48,9 +48,9 @@ function Get-CueAudit {
     }
 
     process {
-        foreach ($p in $Path) {
+        foreach ($p in $CuePath) {
             if (-not (Test-Path -LiteralPath $p)) {
-                Write-Warning "Path not found: $p"
+                Write-Warning "CuePath not found: $p"
                 continue
             }
 
@@ -81,7 +81,7 @@ function Get-CueAudit {
             }
             else {
                 # Single file path provided
-                if ([string]::Equals([System.IO.Path]::GetExtension($item.FullName), '.cue', 'OrdinalIgnoreCase')) {
+                if ([string]::Equals([System.IO.CuePath]::GetExtension($item.FullName), '.cue', 'OrdinalIgnoreCase')) {
                     $files = @($item)
                 }
                 else {
@@ -138,15 +138,16 @@ if ((Test-Path Variable:PSModuleInfo) -and ($null -ne $PSModuleInfo)) {
 
 # If the script file is executed directly and parameters were provided, forward them to the function.
 # This lets users run the script as: .\Public\Get-CueAudit.ps1 -Path 'D:\' -Recurse -WhatIf
-if ($PSCommandPath -and ($Path -or $args.Count -gt 0)) {
+if ($PSCommandPath -and ($CuePath -or $args.Count -gt 0)) {
     try {
-        Get-CueAudit -Path $Path -Recurse:$Recurse -WhatIf:$WhatIf -Confirm:$Confirm
+        Get-CueAudit -Path $CuePath -Recurse:$Recurse -WhatIf:$WhatIf -Confirm:$Confirm
     }
     catch {
         Write-Error $_.ToString()
     }
     return
 }
+
 
 
 

@@ -226,6 +226,8 @@ Notes:
 
 There may be an interactive helper (`Run-InteractiveFix.ps1` or `Invoke-InteractiveFix`) that lets you confirm fixes one-by-one. This is the safest option for the first run.
 
+- While using the interactive "unfixables" reviewer you can press "M" to "MakeCueFile" — this creates a minimal .cue that lists audio files present in that folder. Edit the generated file to set order/titles/indexes, then re-run the audit/interactive flow to complete the repair.
+
 ```powershell
 # Example interactive run
 .\Public\Run-InteractiveFix.ps1 -Path 'D:\Music'

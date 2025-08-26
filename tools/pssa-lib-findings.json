@@ -1,0 +1,512 @@
+[
+  {
+    "Message": "The cmdlet 'Normalize-NameForCompare' uses an unapproved verb.",
+    "Extent": {
+      "File": "C:\\Users\\resto\\Documents\\PowerShell\\Modules\\CueFixer\\Lib\\Analyze.ps1",
+      "StartScriptPosition": {
+        "File": "C:\\Users\\resto\\Documents\\PowerShell\\Modules\\CueFixer\\Lib\\Analyze.ps1",
+        "LineNumber": 3,
+        "ColumnNumber": 10,
+        "Line": "function Normalize-NameForCompare {\r\n",
+        "Offset": 99
+      },
+      "EndScriptPosition": {
+        "File": "C:\\Users\\resto\\Documents\\PowerShell\\Modules\\CueFixer\\Lib\\Analyze.ps1",
+        "LineNumber": 3,
+        "ColumnNumber": 34,
+        "Line": "function Normalize-NameForCompare {\r\n",
+        "Offset": 123
+      },
+      "StartLineNumber": 3,
+      "StartColumnNumber": 10,
+      "EndLineNumber": 3,
+      "EndColumnNumber": 34,
+      "Text": "Normalize-NameForCompare",
+      "StartOffset": 99,
+      "EndOffset": 123
+    },
+    "RuleName": "PSUseApprovedVerbs",
+    "Severity": 1,
+    "ScriptName": "Analyze.ps1",
+    "ScriptPath": "C:\\Users\\resto\\Documents\\PowerShell\\Modules\\CueFixer\\Lib\\Analyze.ps1",
+    "RuleSuppressionID": null,
+    "SuggestedCorrections": null,
+    "IsSuppressed": false,
+    "Line": 3,
+    "Column": 10
+  },
+  {
+    "Message": "The cmdlet 'Token-Similarity' uses an unapproved verb.",
+    "Extent": {
+      "File": "C:\\Users\\resto\\Documents\\PowerShell\\Modules\\CueFixer\\Lib\\Analyze.ps1",
+      "StartScriptPosition": {
+        "File": "C:\\Users\\resto\\Documents\\PowerShell\\Modules\\CueFixer\\Lib\\Analyze.ps1",
+        "LineNumber": 14,
+        "ColumnNumber": 10,
+        "Line": "function Token-Similarity {\r\n",
+        "Offset": 491
+      },
+      "EndScriptPosition": {
+        "File": "C:\\Users\\resto\\Documents\\PowerShell\\Modules\\CueFixer\\Lib\\Analyze.ps1",
+        "LineNumber": 14,
+        "ColumnNumber": 26,
+        "Line": "function Token-Similarity {\r\n",
+        "Offset": 507
+      },
+      "StartLineNumber": 14,
+      "StartColumnNumber": 10,
+      "EndLineNumber": 14,
+      "EndColumnNumber": 26,
+      "Text": "Token-Similarity",
+      "StartOffset": 491,
+      "EndOffset": 507
+    },
+    "RuleName": "PSUseApprovedVerbs",
+    "Severity": 1,
+    "ScriptName": "Analyze.ps1",
+    "ScriptPath": "C:\\Users\\resto\\Documents\\PowerShell\\Modules\\CueFixer\\Lib\\Analyze.ps1",
+    "RuleSuppressionID": null,
+    "SuggestedCorrections": null,
+    "IsSuppressed": false,
+    "Line": 14,
+    "Column": 10
+  },
+  {
+    "Message": "Empty catch block is used. Please use Write-Error or throw statements in catch blocks.",
+    "Extent": {
+      "File": "C:\\Users\\resto\\Documents\\PowerShell\\Modules\\CueFixer\\Lib\\Interactive.ps1",
+      "StartScriptPosition": {
+        "File": "C:\\Users\\resto\\Documents\\PowerShell\\Modules\\CueFixer\\Lib\\Interactive.ps1",
+        "LineNumber": 108,
+        "ColumnNumber": 19,
+        "Line": "                } catch {\r\n",
+        "Offset": 4365
+      },
+      "EndScriptPosition": {
+        "File": "C:\\Users\\resto\\Documents\\PowerShell\\Modules\\CueFixer\\Lib\\Interactive.ps1",
+        "LineNumber": 110,
+        "ColumnNumber": 18,
+        "Line": "                }\r\n",
+        "Offset": 4455
+      },
+      "StartLineNumber": 108,
+      "StartColumnNumber": 19,
+      "EndLineNumber": 110,
+      "EndColumnNumber": 18,
+      "Text": "catch {\r\n                # ignore items that can't be resolved to files\r\n                }",
+      "StartOffset": 4365,
+      "EndOffset": 4455
+    },
+    "RuleName": "PSAvoidUsingEmptyCatchBlock",
+    "Severity": 1,
+    "ScriptName": "Interactive.ps1",
+    "ScriptPath": "C:\\Users\\resto\\Documents\\PowerShell\\Modules\\CueFixer\\Lib\\Interactive.ps1",
+    "RuleSuppressionID": null,
+    "SuggestedCorrections": null,
+    "IsSuppressed": false,
+    "Line": 108,
+    "Column": 19
+  },
+  {
+    "Message": "Empty catch block is used. Please use Write-Error or throw statements in catch blocks.",
+    "Extent": {
+      "File": "C:\\Users\\resto\\Documents\\PowerShell\\Modules\\CueFixer\\Lib\\Interactive.ps1",
+      "StartScriptPosition": {
+        "File": "C:\\Users\\resto\\Documents\\PowerShell\\Modules\\CueFixer\\Lib\\Interactive.ps1",
+        "LineNumber": 169,
+        "ColumnNumber": 19,
+        "Line": "                } catch {\r\n",
+        "Offset": 6960
+      },
+      "EndScriptPosition": {
+        "File": "C:\\Users\\resto\\Documents\\PowerShell\\Modules\\CueFixer\\Lib\\Interactive.ps1",
+        "LineNumber": 171,
+        "ColumnNumber": 18,
+        "Line": "                }\r\n",
+        "Offset": 7031
+      },
+      "StartLineNumber": 169,
+      "StartColumnNumber": 19,
+      "EndLineNumber": 171,
+      "EndColumnNumber": 18,
+      "Text": "catch {\r\n                    # Fall through to RawUI\r\n                }",
+      "StartOffset": 6960,
+      "EndOffset": 7031
+    },
+    "RuleName": "PSAvoidUsingEmptyCatchBlock",
+    "Severity": 1,
+    "ScriptName": "Interactive.ps1",
+    "ScriptPath": "C:\\Users\\resto\\Documents\\PowerShell\\Modules\\CueFixer\\Lib\\Interactive.ps1",
+    "RuleSuppressionID": null,
+    "SuggestedCorrections": null,
+    "IsSuppressed": false,
+    "Line": 169,
+    "Column": 19
+  },
+  {
+    "Message": "Empty catch block is used. Please use Write-Error or throw statements in catch blocks.",
+    "Extent": {
+      "File": "C:\\Users\\resto\\Documents\\PowerShell\\Modules\\CueFixer\\Lib\\Interactive.ps1",
+      "StartScriptPosition": {
+        "File": "C:\\Users\\resto\\Documents\\PowerShell\\Modules\\CueFixer\\Lib\\Interactive.ps1",
+        "LineNumber": 190,
+        "ColumnNumber": 19,
+        "Line": "                } catch {\r\n",
+        "Offset": 7891
+      },
+      "EndScriptPosition": {
+        "File": "C:\\Users\\resto\\Documents\\PowerShell\\Modules\\CueFixer\\Lib\\Interactive.ps1",
+        "LineNumber": 191,
+        "ColumnNumber": 18,
+        "Line": "                }\r\n",
+        "Offset": 7917
+      },
+      "StartLineNumber": 190,
+      "StartColumnNumber": 19,
+      "EndLineNumber": 191,
+      "EndColumnNumber": 18,
+      "Text": "catch {\r\n                }",
+      "StartOffset": 7891,
+      "EndOffset": 7917
+    },
+    "RuleName": "PSAvoidUsingEmptyCatchBlock",
+    "Severity": 1,
+    "ScriptName": "Interactive.ps1",
+    "ScriptPath": "C:\\Users\\resto\\Documents\\PowerShell\\Modules\\CueFixer\\Lib\\Interactive.ps1",
+    "RuleSuppressionID": null,
+    "SuggestedCorrections": null,
+    "IsSuppressed": false,
+    "Line": 190,
+    "Column": 19
+  },
+  {
+    "Message": "File 'Interactive.ps1' uses Write-Host. Avoid using Write-Host because it might not work in all hosts, does not work when there is no host, and (prior to PS 5.0) cannot be suppressed, captured, or redirected. Instead, use Write-Output, Write-Verbose, or Write-Information.",
+    "Extent": {
+      "File": "C:\\Users\\resto\\Documents\\PowerShell\\Modules\\CueFixer\\Lib\\Interactive.ps1",
+      "StartScriptPosition": {
+        "File": "C:\\Users\\resto\\Documents\\PowerShell\\Modules\\CueFixer\\Lib\\Interactive.ps1",
+        "LineNumber": 148,
+        "ColumnNumber": 5,
+        "Line": "    Write-Host \"Navigation: Left/Right = Prev/Next • Home/End = First/Last • A=Apply • S/Enter=Skip • E=Edit • P=Play • R=Retry • Q=Quit\" -ForegroundColor DarkCyan\r\n",
+        "Offset": 5683
+      },
+      "EndScriptPosition": {
+        "File": "C:\\Users\\resto\\Documents\\PowerShell\\Modules\\CueFixer\\Lib\\Interactive.ps1",
+        "LineNumber": 148,
+        "ColumnNumber": 164,
+        "Line": "    Write-Host \"Navigation: Left/Right = Prev/Next • Home/End = First/Last • A=Apply • S/Enter=Skip • E=Edit • P=Play • R=Retry • Q=Quit\" -ForegroundColor DarkCyan\r\n",
+        "Offset": 5842
+      },
+      "StartLineNumber": 148,
+      "StartColumnNumber": 5,
+      "EndLineNumber": 148,
+      "EndColumnNumber": 164,
+      "Text": "Write-Host \"Navigation: Left/Right = Prev/Next • Home/End = First/Last • A=Apply • S/Enter=Skip • E=Edit • P=Play • R=Retry • Q=Quit\" -ForegroundColor DarkCyan",
+      "StartOffset": 5683,
+      "EndOffset": 5842
+    },
+    "RuleName": "PSAvoidUsingWriteHost",
+    "Severity": 1,
+    "ScriptName": "Interactive.ps1",
+    "ScriptPath": "C:\\Users\\resto\\Documents\\PowerShell\\Modules\\CueFixer\\Lib\\Interactive.ps1",
+    "RuleSuppressionID": null,
+    "SuggestedCorrections": null,
+    "IsSuppressed": false,
+    "Line": 148,
+    "Column": 5
+  },
+  {
+    "Message": "File 'Interactive.ps1' uses Write-Host. Avoid using Write-Host because it might not work in all hosts, does not work when there is no host, and (prior to PS 5.0) cannot be suppressed, captured, or redirected. Instead, use Write-Output, Write-Verbose, or Write-Information.",
+    "Extent": {
+      "File": "C:\\Users\\resto\\Documents\\PowerShell\\Modules\\CueFixer\\Lib\\Interactive.ps1",
+      "StartScriptPosition": {
+        "File": "C:\\Users\\resto\\Documents\\PowerShell\\Modules\\CueFixer\\Lib\\Interactive.ps1",
+        "LineNumber": 157,
+        "ColumnNumber": 25,
+        "Line": "                        Write-Host $Prompt -NoNewline\r\n",
+        "Offset": 6342
+      },
+      "EndScriptPosition": {
+        "File": "C:\\Users\\resto\\Documents\\PowerShell\\Modules\\CueFixer\\Lib\\Interactive.ps1",
+        "LineNumber": 157,
+        "ColumnNumber": 54,
+        "Line": "                        Write-Host $Prompt -NoNewline\r\n",
+        "Offset": 6371
+      },
+      "StartLineNumber": 157,
+      "StartColumnNumber": 25,
+      "EndLineNumber": 157,
+      "EndColumnNumber": 54,
+      "Text": "Write-Host $Prompt -NoNewline",
+      "StartOffset": 6342,
+      "EndOffset": 6371
+    },
+    "RuleName": "PSAvoidUsingWriteHost",
+    "Severity": 1,
+    "ScriptName": "Interactive.ps1",
+    "ScriptPath": "C:\\Users\\resto\\Documents\\PowerShell\\Modules\\CueFixer\\Lib\\Interactive.ps1",
+    "RuleSuppressionID": null,
+    "SuggestedCorrections": null,
+    "IsSuppressed": false,
+    "Line": 157,
+    "Column": 25
+  },
+  {
+    "Message": "File 'Interactive.ps1' uses Write-Host. Avoid using Write-Host because it might not work in all hosts, does not work when there is no host, and (prior to PS 5.0) cannot be suppressed, captured, or redirected. Instead, use Write-Output, Write-Verbose, or Write-Information.",
+    "Extent": {
+      "File": "C:\\Users\\resto\\Documents\\PowerShell\\Modules\\CueFixer\\Lib\\Interactive.ps1",
+      "StartScriptPosition": {
+        "File": "C:\\Users\\resto\\Documents\\PowerShell\\Modules\\CueFixer\\Lib\\Interactive.ps1",
+        "LineNumber": 159,
+        "ColumnNumber": 25,
+        "Line": "                        Write-Host ''\r\n",
+        "Offset": 6462
+      },
+      "EndScriptPosition": {
+        "File": "C:\\Users\\resto\\Documents\\PowerShell\\Modules\\CueFixer\\Lib\\Interactive.ps1",
+        "LineNumber": 159,
+        "ColumnNumber": 38,
+        "Line": "                        Write-Host ''\r\n",
+        "Offset": 6475
+      },
+      "StartLineNumber": 159,
+      "StartColumnNumber": 25,
+      "EndLineNumber": 159,
+      "EndColumnNumber": 38,
+      "Text": "Write-Host ''",
+      "StartOffset": 6462,
+      "EndOffset": 6475
+    },
+    "RuleName": "PSAvoidUsingWriteHost",
+    "Severity": 1,
+    "ScriptName": "Interactive.ps1",
+    "ScriptPath": "C:\\Users\\resto\\Documents\\PowerShell\\Modules\\CueFixer\\Lib\\Interactive.ps1",
+    "RuleSuppressionID": null,
+    "SuggestedCorrections": null,
+    "IsSuppressed": false,
+    "Line": 159,
+    "Column": 25
+  },
+  {
+    "Message": "File 'Interactive.ps1' uses Write-Host. Avoid using Write-Host because it might not work in all hosts, does not work when there is no host, and (prior to PS 5.0) cannot be suppressed, captured, or redirected. Instead, use Write-Output, Write-Verbose, or Write-Information.",
+    "Extent": {
+      "File": "C:\\Users\\resto\\Documents\\PowerShell\\Modules\\CueFixer\\Lib\\Interactive.ps1",
+      "StartScriptPosition": {
+        "File": "C:\\Users\\resto\\Documents\\PowerShell\\Modules\\CueFixer\\Lib\\Interactive.ps1",
+        "LineNumber": 176,
+        "ColumnNumber": 25,
+        "Line": "                        Write-Host $Prompt -NoNewline\r\n",
+        "Offset": 7178
+      },
+      "EndScriptPosition": {
+        "File": "C:\\Users\\resto\\Documents\\PowerShell\\Modules\\CueFixer\\Lib\\Interactive.ps1",
+        "LineNumber": 176,
+        "ColumnNumber": 54,
+        "Line": "                        Write-Host $Prompt -NoNewline\r\n",
+        "Offset": 7207
+      },
+      "StartLineNumber": 176,
+      "StartColumnNumber": 25,
+      "EndLineNumber": 176,
+      "EndColumnNumber": 54,
+      "Text": "Write-Host $Prompt -NoNewline",
+      "StartOffset": 7178,
+      "EndOffset": 7207
+    },
+    "RuleName": "PSAvoidUsingWriteHost",
+    "Severity": 1,
+    "ScriptName": "Interactive.ps1",
+    "ScriptPath": "C:\\Users\\resto\\Documents\\PowerShell\\Modules\\CueFixer\\Lib\\Interactive.ps1",
+    "RuleSuppressionID": null,
+    "SuggestedCorrections": null,
+    "IsSuppressed": false,
+    "Line": 176,
+    "Column": 25
+  },
+  {
+    "Message": "File 'Interactive.ps1' uses Write-Host. Avoid using Write-Host because it might not work in all hosts, does not work when there is no host, and (prior to PS 5.0) cannot be suppressed, captured, or redirected. Instead, use Write-Output, Write-Verbose, or Write-Information.",
+    "Extent": {
+      "File": "C:\\Users\\resto\\Documents\\PowerShell\\Modules\\CueFixer\\Lib\\Interactive.ps1",
+      "StartScriptPosition": {
+        "File": "C:\\Users\\resto\\Documents\\PowerShell\\Modules\\CueFixer\\Lib\\Interactive.ps1",
+        "LineNumber": 178,
+        "ColumnNumber": 25,
+        "Line": "                        Write-Host ''\r\n",
+        "Offset": 7307
+      },
+      "EndScriptPosition": {
+        "File": "C:\\Users\\resto\\Documents\\PowerShell\\Modules\\CueFixer\\Lib\\Interactive.ps1",
+        "LineNumber": 178,
+        "ColumnNumber": 38,
+        "Line": "                        Write-Host ''\r\n",
+        "Offset": 7320
+      },
+      "StartLineNumber": 178,
+      "StartColumnNumber": 25,
+      "EndLineNumber": 178,
+      "EndColumnNumber": 38,
+      "Text": "Write-Host ''",
+      "StartOffset": 7307,
+      "EndOffset": 7320
+    },
+    "RuleName": "PSAvoidUsingWriteHost",
+    "Severity": 1,
+    "ScriptName": "Interactive.ps1",
+    "ScriptPath": "C:\\Users\\resto\\Documents\\PowerShell\\Modules\\CueFixer\\Lib\\Interactive.ps1",
+    "RuleSuppressionID": null,
+    "SuggestedCorrections": null,
+    "IsSuppressed": false,
+    "Line": 178,
+    "Column": 25
+  },
+  {
+    "Message": "$null should be on the left side of equality comparisons.",
+    "Extent": {
+      "File": "C:\\Users\\resto\\Documents\\PowerShell\\Modules\\CueFixer\\Lib\\Interactive.ps1",
+      "StartScriptPosition": {
+        "File": "C:\\Users\\resto\\Documents\\PowerShell\\Modules\\CueFixer\\Lib\\Interactive.ps1",
+        "LineNumber": 156,
+        "ColumnNumber": 47,
+        "Line": "                    if ([System.Console] -and [System.Console]::KeyAvailable -ne $null) {\r\n",
+        "Offset": 6273
+      },
+      "EndScriptPosition": {
+        "File": "C:\\Users\\resto\\Documents\\PowerShell\\Modules\\CueFixer\\Lib\\Interactive.ps1",
+        "LineNumber": 156,
+        "ColumnNumber": 87,
+        "Line": "                    if ([System.Console] -and [System.Console]::KeyAvailable -ne $null) {\r\n",
+        "Offset": 6313
+      },
+      "StartLineNumber": 156,
+      "StartColumnNumber": 47,
+      "EndLineNumber": 156,
+      "EndColumnNumber": 87,
+      "Text": "[System.Console]::KeyAvailable -ne $null",
+      "StartOffset": 6273,
+      "EndOffset": 6313
+    },
+    "RuleName": "PSPossibleIncorrectComparisonWithNull",
+    "Severity": 1,
+    "ScriptName": "Interactive.ps1",
+    "ScriptPath": "C:\\Users\\resto\\Documents\\PowerShell\\Modules\\CueFixer\\Lib\\Interactive.ps1",
+    "RuleSuppressionID": null,
+    "SuggestedCorrections": [
+      {
+        "File": "C:\\Users\\resto\\Documents\\PowerShell\\Modules\\CueFixer\\Lib\\Interactive.ps1",
+        "Description": "Use $null on the left hand side for safe comparison with $null.",
+        "StartLineNumber": 156,
+        "StartColumnNumber": 47,
+        "EndLineNumber": 156,
+        "EndColumnNumber": 87,
+        "Text": "$null -ne [System.Console]::KeyAvailable",
+        "Lines": [
+          "$null -ne [System.Console]::KeyAvailable"
+        ],
+        "Start": {
+          "Line": 156,
+          "Column": 47
+        },
+        "End": {
+          "Line": 156,
+          "Column": 87
+        }
+      }
+    ],
+    "IsSuppressed": false,
+    "Line": 156,
+    "Column": 47
+  },
+  {
+    "Message": "$null should be on the left side of equality comparisons.",
+    "Extent": {
+      "File": "C:\\Users\\resto\\Documents\\PowerShell\\Modules\\CueFixer\\Lib\\Interactive.ps1",
+      "StartScriptPosition": {
+        "File": "C:\\Users\\resto\\Documents\\PowerShell\\Modules\\CueFixer\\Lib\\Interactive.ps1",
+        "LineNumber": 156,
+        "ColumnNumber": 47,
+        "Line": "                    if ([System.Console] -and [System.Console]::KeyAvailable -ne $null) {\r\n",
+        "Offset": 6273
+      },
+      "EndScriptPosition": {
+        "File": "C:\\Users\\resto\\Documents\\PowerShell\\Modules\\CueFixer\\Lib\\Interactive.ps1",
+        "LineNumber": 156,
+        "ColumnNumber": 87,
+        "Line": "                    if ([System.Console] -and [System.Console]::KeyAvailable -ne $null) {\r\n",
+        "Offset": 6313
+      },
+      "StartLineNumber": 156,
+      "StartColumnNumber": 47,
+      "EndLineNumber": 156,
+      "EndColumnNumber": 87,
+      "Text": "[System.Console]::KeyAvailable -ne $null",
+      "StartOffset": 6273,
+      "EndOffset": 6313
+    },
+    "RuleName": "PSPossibleIncorrectComparisonWithNull",
+    "Severity": 1,
+    "ScriptName": "Interactive.ps1",
+    "ScriptPath": "C:\\Users\\resto\\Documents\\PowerShell\\Modules\\CueFixer\\Lib\\Interactive.ps1",
+    "RuleSuppressionID": null,
+    "SuggestedCorrections": [
+      {
+        "File": "C:\\Users\\resto\\Documents\\PowerShell\\Modules\\CueFixer\\Lib\\Interactive.ps1",
+        "Description": "Use $null on the left hand side for safe comparison with $null.",
+        "StartLineNumber": 156,
+        "StartColumnNumber": 47,
+        "EndLineNumber": 156,
+        "EndColumnNumber": 87,
+        "Text": "$null -ne [System.Console]::KeyAvailable",
+        "Lines": [
+          "$null -ne [System.Console]::KeyAvailable"
+        ],
+        "Start": {
+          "Line": 156,
+          "Column": 47
+        },
+        "End": {
+          "Line": 156,
+          "Column": 87
+        }
+      }
+    ],
+    "IsSuppressed": false,
+    "Line": 156,
+    "Column": 47
+  },
+  {
+    "Message": "Function 'New-CueModel' has verb that could change system state. Therefore, the function has to support 'ShouldProcess'.",
+    "Extent": {
+      "File": "C:\\Users\\resto\\Documents\\PowerShell\\Modules\\CueFixer\\Lib\\Models.ps1",
+      "StartScriptPosition": {
+        "File": "C:\\Users\\resto\\Documents\\PowerShell\\Modules\\CueFixer\\Lib\\Models.ps1",
+        "LineNumber": 1,
+        "ColumnNumber": 10,
+        "Line": "function New-CueModel {\r\n",
+        "Offset": 9
+      },
+      "EndScriptPosition": {
+        "File": "C:\\Users\\resto\\Documents\\PowerShell\\Modules\\CueFixer\\Lib\\Models.ps1",
+        "LineNumber": 1,
+        "ColumnNumber": 22,
+        "Line": "function New-CueModel {\r\n",
+        "Offset": 21
+      },
+      "StartLineNumber": 1,
+      "StartColumnNumber": 10,
+      "EndLineNumber": 1,
+      "EndColumnNumber": 22,
+      "Text": "New-CueModel",
+      "StartOffset": 9,
+      "EndOffset": 21
+    },
+    "RuleName": "PSUseShouldProcessForStateChangingFunctions",
+    "Severity": 1,
+    "ScriptName": "Models.ps1",
+    "ScriptPath": "C:\\Users\\resto\\Documents\\PowerShell\\Modules\\CueFixer\\Lib\\Models.ps1",
+    "RuleSuppressionID": null,
+    "SuggestedCorrections": null,
+    "IsSuppressed": false,
+    "Line": 1,
+    "Column": 10
+  }
+]

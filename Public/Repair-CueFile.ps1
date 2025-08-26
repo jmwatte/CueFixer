@@ -7,9 +7,9 @@ Apply structural fixes to a .cue file and write changes (creates a .bak backup).
 entries) and writes changes to the original file after creating a backup named
 `<file>.bak` unless run with `-DryRun`.
 
-.PARAMETER Path
-Path to the .cue file to repair. This parameter accepts pipeline input as a string
-or objects that have a `Path` property (for example the output of `Get-CueAudit`).
+.PARAMETER CuePath
+CuePath to the .cue file to repair. This parameter accepts pipeline input as a string
+or objects that have a `CuePath` property (for example the output of `Get-CueAudit`).
 
 .PARAMETER DryRun
 When specified, the cmdlet will not write changes to disk. It returns the same
@@ -35,65 +35,77 @@ function Repair-CueFile {
     [CmdletBinding(SupportsShouldProcess=$true)]
     param(
     [Parameter(Mandatory=$false, Position=0, ValueFromPipeline=$true, ValueFromPipelineByPropertyName=$true)]
-    [string]$Path,
+    [string]$CuePath,
 
         [switch]$DryRun,
 
-        [switch]$Backup
+        # Keep old -Backup switch for compatibility. New behavior: if neither
+        # -Backup nor -NoBackup is supplied, default to creating a backup (.bak).
+        [switch]$Backup,
+        [switch]$NoBackup
     )
 
     process {
-        # support pipeline objects with a Path property, and handle cases where
-        # the whole object was bound to the $Path parameter (PowerShell may try
+        # support pipeline objects with a CuePath property, and handle cases where
+        # the whole object was bound to the $CuePath parameter (PowerShell may try
         # to bind the input object to the parameter by value).
-        if ($Path -and ($Path -isnot [string])) {
-            # If $Path is an object (not string), prefer its Path property when present
-            if ($Path.PSObject.Properties['Path']) {
-                $Path = $Path.Path
+        if ($CuePath -and ($CuePath -isnot [string])) {
+            # If $CuePath is an object (not string), prefer its CuePath property when present
+            if ($CuePath.PSObject.Properties['CuePath']) {
+                $CuePath = $CuePath.CuePath
             }
             else {
                 # fallback to looking at the current pipeline object
-                if ($_ -and $_.PSObject.Properties['Path']) { $Path = $_.Path }
-                else { Write-Verbose "Skipping pipeline input that doesn't contain a Path"; return }
+                if ($_ -and $_.PSObject.Properties['CuePath']) { $CuePath = $_.CuePath }
+                else { Write-Verbose "Skipping pipeline input that doesn't contain a CuePath"; return }
             }
         }
-        elseif (-not $Path) {
-            # If no $Path param value, try to extract from pipeline object
-            if ($_ -is [string]) { $Path = $_ }
-            elseif ($_ -and $_.PSObject.Properties['Path']) { $Path = $_.Path }
-            else { Write-Verbose "Skipping pipeline input that doesn't contain a Path"; return }
+        elseif (-not $CuePath) {
+            # If no $CuePath param value, try to extract from pipeline object
+            if ($_ -is [string]) { $CuePath = $_ }
+            elseif ($_ -and $_.PSObject.Properties['CuePath']) { $CuePath = $_.CuePath }
+            else { Write-Verbose "Skipping pipeline input that doesn't contain a CuePath"; return }
         }
 
-        if (-not (Test-Path -LiteralPath $Path)) {
-            Write-Warning "Path not found: $Path"
-            return [PSCustomObject]@{ Path = $Path; Changed = $false; Error = 'NotFound' }
+        if (-not (Test-Path -LiteralPath $CuePath)) {
+            Write-Warning "CuePath not found: $CuePath"
+            return [PSCustomObject]@{ CuePath = $CuePath; Changed = $false; Error = 'NotFound' }
         }
 
-        $res = Set-CueFileStructure -CueFilePath $Path
+        $res = Set-CueFileStructure -CueFilePath $CuePath
 
         if ($res.Changed) {
 
 
                 if ($DryRun) {
-                Write-Verbose "DryRun enabled; not writing changes for $Path"
+                Write-Verbose "DryRun enabled; not writing changes for $CuePath"
                 # return what would have changed
-                return [PSCustomObject]@{ Path = $Path; Changed = $true; DryRun = $true; Proposed = $res.FixedText }
+                return [PSCustomObject]@{ CuePath = $CuePath; Changed = $true; DryRun = $true; Proposed = $res.FixedText }
             }
 
+            # Decide whether to create a backup. Default: create a backup unless
+            # the caller explicitly requested no backup via -NoBackup. If -Backup
+            # was provided preserve that intent.
+            $createBackup = $false
+            if ($PSBoundParameters.ContainsKey('NoBackup')) { $createBackup = $false }
+            elseif ($PSBoundParameters.ContainsKey('Backup')) { $createBackup = $true }
+            else { $createBackup = $true } # default to creating backup as per docs
+
             # Confirm/WhatIf support via Save-FileWithBackup
-            if ($PSCmdlet.ShouldProcess($Path, 'Write fixed cue file')) {
-                $wrote = Save-FileWithBackup -Path $Path -Content $res.FixedText -Backup:$Backup
-                return [PSCustomObject]@{ Path = $Path; Changed = $wrote; Backup = [bool]$Backup }
+            if ($PSCmdlet.ShouldProcess($CuePath, 'Write fixed cue file')) {
+                $wrote = Save-FileWithBackup -Path $CuePath -Content $res.FixedText -Backup:($createBackup)
+                return [PSCustomObject]@{ CuePath = $CuePath; Changed = $wrote; Backup = [bool]$createBackup }
             }
             else {
-                return [PSCustomObject]@{ Path = $Path; Changed = $false; SkippedByShouldProcess = $true }
+                return [PSCustomObject]@{ CuePath = $CuePath; Changed = $false; SkippedByShouldProcess = $true }
             }
         }
         else {
-            return [PSCustomObject]@{ Path = $Path; Changed = $false }
+            return [PSCustomObject]@{ CuePath = $CuePath; Changed = $false }
         }
     }
 }
+
 
 
 

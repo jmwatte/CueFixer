@@ -1,4 +1,4 @@
-param(
+﻿param(
     [string]$CsvPath = 'C:\Temp\cue-audit-d-drive.csv',
     [int]$Sample = 10
 )
@@ -38,3 +38,4 @@ if ($unfix) { $unfix | ForEach-Object { Write-Host $_ } } else { Write-Host "(no
 
 # Exit with non-zero if there are unfixable files
 if ($summary.Unfixable -gt 0) { exit 3 }
+

@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
   Summarize CueFixer audit results (CLIXML/CSV/JSON or piped objects).
 
@@ -166,3 +166,4 @@ end {
         Write-Error $_.Exception.Message
     }
 }
+

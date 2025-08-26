@@ -38,7 +38,7 @@ function Get-FunctionBlocksFromScript {
     return $blocks
 }
 
-$scriptPath = Join-Path $PSScriptRoot 'cleanCueFiles.ps1'
+$scriptPath = Join-Path $PSScriptRoot 'legacy\cleanCueFiles.ps1'
 if (-not (Test-Path -LiteralPath $scriptPath)) {
     Throw "Missing script: $scriptPath"
 }
@@ -68,24 +68,103 @@ $libDir = Join-Path $PSScriptRoot 'Lib'
 if (Test-Path $libDir) {
     $config = Join-Path $libDir 'ModuleConfig.ps1'
     if (Test-Path $config) { . $config }
-    Get-ChildItem -Path $libDir -Filter *.ps1 -File -Recurse | Where-Object { $_.Name -ne 'ModuleConfig.ps1' } | ForEach-Object { . $_.FullName }
+    # Dot-source only files that do not declare a top-level param(...) block.
+    Get-ChildItem -Path $libDir -Filter *.ps1 -File -Recurse |
+    Where-Object { $_.Name -ne 'ModuleConfig.ps1' } |
+    ForEach-Object {
+        try {
+            #$content = Get-Content -LiteralPath $_.FullName -ErrorAction Stop -Raw
+            # if ($content -match '(?m)^[ \t]*param\s*\(') {
+            #     Write-Verbose "Skipping dot-source of library file with top-level param: $($_.FullName)"
+            # }
+            # else {
+            #     . $_.FullName
+            # }
+            . $_.FullName
+            # Export all the functions we dot-sourced above
+            # Get-FunctionBlocksFromScript -ScriptPath $_.FullName | ForEach-Object {
+            #     $functionName = ($_ -match 'function\s+([\w-]+)') ? $matches[1] : $null
+            #     if ($functionName) {
+            #         Export-ModuleMember -Function $functionName
+            #     }
+            # }
+        }
+        catch {
+            Write-Verbose "Failed to inspect or dot-source $($_.FullName): $($_.Exception.Message)"
+        }
+    }
 }
 
-# Dot-source public wrappers
+# --- Dot-source public wrappers but skip scripts that declare top-level params ---
 $publicDir = Join-Path $PSScriptRoot 'Public'
 if (Test-Path $publicDir) {
-    Get-ChildItem -Path $publicDir -Filter *.ps1 -File | ForEach-Object { . $_.FullName }
+    Get-ChildItem -Path $publicDir -Filter *.ps1 -File | ForEach-Object {
+        try {
+            #$content = Get-Content -LiteralPath $_.FullName -ErrorAction Stop -Raw
+            # if ($content -match '(?m)^[ \t]*param\s*\(') {
+            #     Write-Verbose "Skipping dot-source of public script with top-level param: $($_.FullName)"
+            # }
+            # else {
+            #     . $_.FullName
+            # }
+            . $_.FullName
+            # Export all the functions we dot-sourced above
+            # Get-FunctionBlocksFromScript -ScriptPath $_.FullName | ForEach-Object {
+            #     $functionName = ($_ -match 'function\s+([\w-]+)') ? $matches[1] : $null
+            #     if ($functionName) {
+            #         Export-ModuleMember -Function $functionName
+            #     }
+            # }
+        }
+        catch {
+            Write-Verbose "Failed to inspect or dot-source $($_.FullName): $($_.Exception.Message)"
+        }
+    }
 }
 # --- Add IO helpers so functions like Save-FileWithBackup are available ---
 $ioDir = Join-Path $PSScriptRoot 'IO'
 if (Test-Path $ioDir) {
-    Get-ChildItem -Path $ioDir -Filter *.ps1 -File | ForEach-Object { . $_.FullName }
+    Get-ChildItem -Path $ioDir -Filter *.ps1 -File | ForEach-Object { . $_.FullName;
+    
+        # Export all the functions we dot-sourced above
+        # Get-FunctionBlocksFromScript -ScriptPath $_.FullName | ForEach-Object {
+        #     $functionName = ($_ -match 'function\s+([\w-]+)') ? $matches[1] : $null
+        #     if ($functionName) {
+        #         Export-ModuleMember -Function $functionName
+        #     }
+        # }
+    }
 }
+
+
+#Export all the functions we dot-sourced above
+ $libFunctions = @('Get-CueAuditCoreImpl', 'Get-CueContentFixImpl', 'Get-CueAuditCore', 'Get-CueContentFix','Token-Similarity','Measure-CueFile',
+ 'Invoke-ApplyFixImpl','Apply-Fixes','Clear-KeyboardBuffer','Get-CueContentFixImpl','Get-CueContentFix','Show-CueAudioSideBySide','Invoke-InteractivePaged'
+ 'Invoke-InteractiveFixImpl','Invoke-Editor','Invoke-InteractiveFix','Measure-CueFile','New-CueModel','Open-InEditor','Get-AuditSummary',
+ 'Show-Fixable','Show-AuditSummary','Show-Fixables','Show-Unfixables','Set-CueFileStructureImpl','Set-CueFileStructure'
+ )
+ $pubFunctions = @('Set-CueFileStructure','Get-CueAuditCore','Get-CueAudit','Repair-CueFile','Invoke-InteractiveFix','Show-AuditSummary',
+ 'Show-Unfixable', 'Select-Unfixables', 'Select-Fixables', 'Select-Cleans'
+   
+ )
+ $heuristicFunctions = @('Invoke-HeuristicFuzzyNameMatch','Get-LevenshteinDistance','Invoke-HeuristicsEngine')
+ $ioFunctions = @('Save-FileWithBackup', 'Get-FileContentRaw')
+
+ Export-ModuleMember -Function @($libFunctions + $pubFunctions + $heuristicFunctions + $ioFunctions)
+
+
 # Export a minimal, stable public surface
-Export-ModuleMember -Function @(
-    'Get-CueAudit', 'Get-CueAuditCore', 'Get-CueContentFix', 'Apply-Fixes', 'Set-CueFileStructure', 'Repair-CueFile', 'Invoke-InteractiveFix',
-    'Open-InEditor', 'Show-Fixable', 'Show-Unfixable', 'Show-AuditSummary',"Invoke-HeuristicFuzzyNameMatch"
-)
+
+# Export-ModuleMember -Function @(
+#     'Get-CueAudit', 'Get-CueAuditCore', 'Get-CueContentFix', 'Apply-Fixes', 'Set-CueFileStructure', 
+#     'Repair-CueFile', 'Invoke-InteractiveFix', 'Open-InEditor', 'Invoke-InteractiveFixImpl',
+#      'Show-Fixable', 'Show-Unfixable', 'Show-AuditSummary', "Invoke-HeuristicFuzzyNameMatch",
+#     "Get-CueContentFixImpl", "Get-CueAuditCoreImpl", "Get-FileContentRaw", "Save-FileWithBackup",
+#     "Measure-CueFile",
+# )
+# # Also export the interactive side-by-side preview helper for tooling
+# Export-ModuleMember -Function 'Show-CueAudioSideBySide'
+
 
 
 
